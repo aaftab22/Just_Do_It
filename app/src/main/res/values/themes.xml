@@ -3,7 +3,7 @@
     <style name="Base.Theme.JustDoIt" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Customize your light theme here. -->
         <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
-        <item name="android:forceDarkAllowed"> false</item>
+
     </style>
 
     <style name="Theme.JustDoIt" parent="Base.Theme.JustDoIt" />
