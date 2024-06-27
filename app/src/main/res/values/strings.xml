@@ -1,0 +1,27 @@
+<resources>
+    <string name="app_name">Just Do It</string>
+
+    <string name="freeApp">USE FREE AND EASY APP WITHOUT ANY ADS!!!</string>
+    <string name="withoutLogin">TIRED OF SHARING EMAIL and CREATING PASSWORD.......!!! NOOO MOREEEE  </string>
+    <string name="quickAndHelpful">NO INTERNET NEEDED TO USE THIS AMAZING APP NO MORE WORRYING OF DATA GETTING STOLEN</string>
+    <string name="enter_a_task">Enter a Task</string>
+    <string name="high_priority_task">High Priority Task?</string>
+    <string name="add_btn_text">ADD</string>
+    <string name="delete_button_icon">Delete button icon</string>
+    <string name="todo">TODO</string>
+
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="about_us_description">We are a passionate team dedicated to providing the best experience for our users. Our app is designed to help you manage your tasks efficiently and effectively.</string>
+    <string name="our_team_title">Our Team</string>
+    <string name="twitter_icon_desc">This is linkedin icon</string>
+    <string name="facebook_icon_desc">This is facebook icon</string>
+    <string name="linkedin_icon_desc">"This is linkedin "</string>
+    <string name="complaint_here_email">If you have any concerns or complaints, please email us at:</string>
+    <string name="businessEmail">darksuntechnologies@gmail.com</string>
+    <string name="powered_by">® Powered by Darksun Technology</string>
+    <string name="skip_btn">Skip</string>
+    <string name="next_btn">Next</string>
+    <string name="gotIt_btn">Got It</string>
+    <string name="page_indicator_description">This is page indicator</string>
+
+</resources>

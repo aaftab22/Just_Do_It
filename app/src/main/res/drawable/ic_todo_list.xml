@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+
+    <!-- Background Circle -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M12,2A10,10 0 1,1 2,12A10,10 0 0,1 12,2Z" />
+
+    <!-- Checkmark -->
+    <path
+        android:fillColor="#4CAF50"
+        android:pathData="M9.5,16.5L5,12L6.41,10.59L9.5,13.67L17.59,5.58L19,7L9.5,16.5Z" />
+
+    <!-- Lines (Representing the list items) -->
+    <path
+        android:fillColor="#000000"
+        android:pathData="M4,8H20V10H4zM4,12H14V14H4zM4,16H12V18H4z" />
+</vector>
