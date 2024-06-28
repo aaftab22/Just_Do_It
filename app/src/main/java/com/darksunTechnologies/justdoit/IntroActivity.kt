@@ -70,11 +70,11 @@ class IntroActivity : AppCompatActivity() {
         }
 
         //Handle "Skip" button click
-        binding.skipBtn.setOnClickListener(View.OnClickListener {
+        binding.skipBtn.setOnClickListener {
             setFirstTimeFlag()
             val intent = Intent(this@IntroActivity, MainActivity::class.java)
             startActivity(intent)
-        })
+        }
     }
 
     // Method to set the 'isFirstTime' flag to false so that we can stop repetition of intoActivity

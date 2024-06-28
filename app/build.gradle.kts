@@ -10,6 +10,7 @@ android {
     defaultConfig {
         applicationId = "com.darksunTechnologies.justdoit"
         minSdk = 24
+        //noinspection OldTargetApi
         targetSdk = 34
         versionCode = 6
         versionName = "1.6"
