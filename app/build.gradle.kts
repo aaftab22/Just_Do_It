@@ -11,8 +11,8 @@ android {
         applicationId = "com.darksunTechnologies.justdoit"
         minSdk = 24
         targetSdk = 34
-        versionCode = 5
-        versionName = "1.5"
+        versionCode = 6
+        versionName = "1.6"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -49,10 +49,9 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 
-    implementation("com.google.android.material:material:1.11.0-beta01")
+    implementation(libs.material)
 
-
-    implementation("com.google.code.gson:gson:2.10.1")
+    implementation(libs.gson)
     //for animation
-    implementation("com.airbnb.android:lottie:5.2.0")
+    implementation(libs.lottie)
 }

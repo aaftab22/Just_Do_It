@@ -15,8 +15,6 @@ import com.darksunTechnologies.justdoit.models.Task
 import com.google.android.material.snackbar.Snackbar
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-
-
 @SuppressLint("NotifyDataSetChanged")
 class MainActivity : AppCompatActivity() {
 
@@ -58,6 +56,12 @@ class MainActivity : AppCompatActivity() {
         binding.btnAdd.setOnClickListener {
             addTask()
         }
+    }
+
+    @Deprecated("Deprecated in Java", ReplaceWith("moveTaskToBack(true)"))
+    @SuppressLint("MissingSuperCall")
+    override fun onBackPressed() {
+        moveTaskToBack(true)
     }
 
     private fun saveTasksToSharedPreferences() {
