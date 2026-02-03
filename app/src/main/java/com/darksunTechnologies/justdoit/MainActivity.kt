@@ -20,7 +20,6 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import androidx.core.content.edit
 
-@SuppressLint("NotifyDataSetChanged")
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
@@ -31,7 +30,6 @@ class MainActivity : AppCompatActivity() {
         rowNumber:Int ->
         viewModel.removeTaskAt(rowNumber)
         saveTasksToSharedPreferences()
-        myAdapter.notifyDataSetChanged()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -46,9 +44,14 @@ class MainActivity : AppCompatActivity() {
             ContextCompat.getColor(this, android.R.color.white)
         )
 
-        myAdapter = TaskAdapter(viewModel.taskList, deleteItemFromList)
+        myAdapter = TaskAdapter(emptyList(), deleteItemFromList)
         binding.tasksRV.adapter = myAdapter
         binding.tasksRV.layoutManager = LinearLayoutManager(this)
+
+        viewModel.tasks.observe(this) { list ->
+            myAdapter.updateList(list)
+        }
+
         this.binding.tasksRV.addItemDecoration(
             DividerItemDecoration(
                 this,
@@ -73,7 +76,7 @@ class MainActivity : AppCompatActivity() {
         val sharedPreferences = getSharedPreferences("Tasks", MODE_PRIVATE)
         sharedPreferences.edit {
             val gson = Gson()
-            val json = gson.toJson(viewModel.taskList)
+            val json = gson.toJson(viewModel.getCurrentTasks())
             putString("taskList", json)
         }
     }
@@ -84,11 +87,11 @@ class MainActivity : AppCompatActivity() {
 
         val json = sharedPreferences.getString("taskList", null)
         val type = object : TypeToken<MutableList<Task>>() {}.type
+
         if (json != null) {
-            viewModel.taskList.clear()
-            viewModel.taskList.addAll(gson.fromJson(json, type))
+            val list = gson.fromJson<List<Task>>(json, type)
+            viewModel.setTasks(list)
         }
-        myAdapter.notifyDataSetChanged()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -127,7 +130,6 @@ class MainActivity : AppCompatActivity() {
         val taskToAdd = Task(nameFromUI, isHighPriorityFromUI)
         viewModel.addTask(taskToAdd)
 
-        myAdapter.notifyDataSetChanged()
         saveTasksToSharedPreferences()
 
         //  clear form and wait for new input
@@ -140,7 +142,7 @@ class MainActivity : AppCompatActivity() {
         viewModel.clearAll()
 
         saveTasksToSharedPreferences()
-        myAdapter.notifyDataSetChanged()
+
         val snackBar = Snackbar.make(binding.root, "All items deleted!", Snackbar.LENGTH_LONG)
         snackBar.show()
     }

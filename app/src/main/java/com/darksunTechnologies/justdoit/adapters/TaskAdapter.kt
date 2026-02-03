@@ -41,5 +41,10 @@ class TaskAdapter (private var yourListData: List<Task>, var deleteFunctionFromM
             deleteFunctionFromMain(position)
         }
     }
-}
 
+    fun updateList(newList: List<Task>) {
+        yourListData = newList
+        notifyDataSetChanged()
+    }
+
+}
