@@ -5,7 +5,7 @@ plugins {
 
 android {
     namespace = "com.darksunTechnologies.justdoit"
-    compileSdk = 34
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.darksunTechnologies.justdoit"
@@ -14,7 +14,6 @@ android {
         targetSdk = 34
         versionCode = 6
         versionName = "1.6"
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -55,4 +54,6 @@ dependencies {
     implementation(libs.gson)
     //for animation
     implementation(libs.lottie)
+    //datastore
+    implementation(libs.androidx.datastore.preferences)
 }
