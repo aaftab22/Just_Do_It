@@ -6,30 +6,30 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.darksunTechnologies.justdoit.adapters.TaskAdapter
 import com.darksunTechnologies.justdoit.databinding.ActivityMainBinding
 import com.darksunTechnologies.justdoit.models.Task
+import com.darksunTechnologies.justdoit.viewmodel.TaskViewModel
 import com.google.android.material.snackbar.Snackbar
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import androidx.core.content.edit
+
 @SuppressLint("NotifyDataSetChanged")
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
-
-    private var taskList:MutableList<Task> = mutableListOf(
-        Task("Start with your first task", false),
-        Task("Is it high priority task? turn of the switch on then", true),
-    )
-
+    private val viewModel: TaskViewModel by viewModels()
     private lateinit var myAdapter: TaskAdapter
 
     private val deleteItemFromList = {
         rowNumber:Int ->
-        taskList.removeAt(rowNumber)
+        viewModel.removeTaskAt(rowNumber)
         saveTasksToSharedPreferences()
         myAdapter.notifyDataSetChanged()
     }
@@ -41,7 +41,12 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
         setSupportActionBar(binding.myToolbar)
 
-        myAdapter = TaskAdapter(taskList, deleteItemFromList)
+        val overFlowicon = binding.myToolbar.overflowIcon
+        overFlowicon?.setTint(
+            ContextCompat.getColor(this, android.R.color.white)
+        )
+
+        myAdapter = TaskAdapter(viewModel.taskList, deleteItemFromList)
         binding.tasksRV.adapter = myAdapter
         binding.tasksRV.layoutManager = LinearLayoutManager(this)
         this.binding.tasksRV.addItemDecoration(
@@ -66,11 +71,11 @@ class MainActivity : AppCompatActivity() {
 
     private fun saveTasksToSharedPreferences() {
         val sharedPreferences = getSharedPreferences("Tasks", MODE_PRIVATE)
-        val editor = sharedPreferences.edit()
-        val gson = Gson()
-        val json = gson.toJson(taskList)
-        editor.putString("taskList", json)
-        editor.apply()
+        sharedPreferences.edit {
+            val gson = Gson()
+            val json = gson.toJson(viewModel.taskList)
+            putString("taskList", json)
+        }
     }
 
     private fun loadTaskFromSharedPreferences() {
@@ -80,8 +85,8 @@ class MainActivity : AppCompatActivity() {
         val json = sharedPreferences.getString("taskList", null)
         val type = object : TypeToken<MutableList<Task>>() {}.type
         if (json != null) {
-            taskList.clear()
-            taskList.addAll(gson.fromJson(json, type))
+            viewModel.taskList.clear()
+            viewModel.taskList.addAll(gson.fromJson(json, type))
         }
         myAdapter.notifyDataSetChanged()
     }
@@ -120,7 +125,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         val taskToAdd = Task(nameFromUI, isHighPriorityFromUI)
-        taskList.add(taskToAdd)
+        viewModel.addTask(taskToAdd)
 
         myAdapter.notifyDataSetChanged()
         saveTasksToSharedPreferences()
@@ -132,7 +137,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun deleteAll() {
         // delete all items in the list
-        taskList.clear()
+        viewModel.clearAll()
 
         saveTasksToSharedPreferences()
         myAdapter.notifyDataSetChanged()
