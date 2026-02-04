@@ -44,12 +44,14 @@ class MainActivity : AppCompatActivity() {
             ContextCompat.getColor(this, android.R.color.white)
         )
 
-        myAdapter = TaskAdapter(emptyList(), deleteItemFromList)
+        myAdapter = TaskAdapter(deleteItemFromList)
         binding.tasksRV.adapter = myAdapter
         binding.tasksRV.layoutManager = LinearLayoutManager(this)
 
+
+
         viewModel.tasks.observe(this) { list ->
-            myAdapter.updateList(list)
+            myAdapter.submitList(list)
         }
 
         this.binding.tasksRV.addItemDecoration(
@@ -126,7 +128,6 @@ class MainActivity : AppCompatActivity() {
             Snackbar.make(binding.root, "Please enter a task", Snackbar.LENGTH_LONG).show()
             return
         }
-
         val taskToAdd = Task(nameFromUI, isHighPriorityFromUI)
         viewModel.addTask(taskToAdd)
 
