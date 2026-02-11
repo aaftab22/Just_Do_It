@@ -1,39 +1,30 @@
 package com.darksunTechnologies.justdoit.viewmodel
 
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.asLiveData
+import androidx.lifecycle.viewModelScope
+import com.darksunTechnologies.justdoit.database.AppDatabase
+import com.darksunTechnologies.justdoit.database.TaskRepository
 import com.darksunTechnologies.justdoit.models.Task
+import kotlinx.coroutines.launch
 
-class TaskViewModel : ViewModel() {
+class TaskViewModel(application: Application): AndroidViewModel(application) {
 
-    private val _tasks = MutableLiveData(
-        listOf(
-            Task("Start with your first task from VM", false),
-            Task("Is it high priority task? turn of the switch on then from VM", true)
-        )
-    )
+    private val dao = AppDatabase.getInstance(application).taskDao()
+    private val repository = TaskRepository(dao)
+    val tasks: LiveData<List<Task>> = repository.getAllTasks().asLiveData()
 
-    fun setTasks(tasks: List<Task>) {
-        _tasks.value = tasks
+    fun addTask(task: Task) = viewModelScope.launch {
+        repository.insertTask(task)
     }
 
-    fun getCurrentTasks(): List<Task> {
-        return _tasks.value.orEmpty()
+    fun deleteTask(task: Task) = viewModelScope.launch {
+        repository.deleteTask(task)
     }
 
-    val tasks: LiveData<List<Task>> = _tasks
-    fun addTask(task: Task){
-        val updatedList = _tasks.value.orEmpty().toMutableList()
-        updatedList.add(task)
-        _tasks.value = updatedList
-    }
-    fun removeTaskAt(index: Int){
-        val updatedList = _tasks.value.orEmpty().toMutableList()
-        updatedList.removeAt(index)
-        _tasks.value = updatedList
-    }
-    fun clearAll(){
-        _tasks.value = emptyList()
+    fun clearAll() = viewModelScope.launch {
+        repository.deleteAll()
     }
 }

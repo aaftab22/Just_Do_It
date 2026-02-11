@@ -11,7 +11,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.darksunTechnologies.justdoit.R
 import com.darksunTechnologies.justdoit.models.Task
 
-class TaskAdapter( private val deleteFunctionFromMain: (Int) -> Unit ) : ListAdapter<Task, TaskAdapter.TaskViewHolder>(DIFF_CALLBACK) {
+class TaskAdapter( private val deleteFunctionFromMain: (Task) -> Unit ) : ListAdapter<Task, TaskAdapter.TaskViewHolder>(DIFF_CALLBACK) {
 
     class TaskViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
 
@@ -34,7 +34,7 @@ class TaskAdapter( private val deleteFunctionFromMain: (Int) -> Unit ) : ListAda
         holder.itemView.findViewById<ImageView>(R.id.delete_IV).setOnClickListener {
             val pos = holder.adapterPosition
             if (pos != RecyclerView.NO_POSITION) {
-                deleteFunctionFromMain(pos)
+                deleteFunctionFromMain(currTask)
             }
         }
     }
