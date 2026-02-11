@@ -1,15 +1,12 @@
 package com.darksunTechnologies.justdoit.models
 
-class Task {
-        var name: String
-        var isHighPriority: Boolean
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 
-        constructor(name: String, isHighPriority: Boolean) {
-            this.name = name
-            this.isHighPriority = isHighPriority
-        }
-
-        override fun toString(): String {
-            return "Task(name='$name', isHighPriority=$isHighPriority)"
-        }
-}
+@Entity(tableName = "tasks")
+data class Task (
+    @PrimaryKey(autoGenerate = true)
+    val id: Int = 0,
+    val name: String,
+    val isHighPriority: Boolean
+)

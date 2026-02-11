@@ -5,41 +5,48 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.darksunTechnologies.justdoit.R
 import com.darksunTechnologies.justdoit.models.Task
 
-class TaskAdapter (private var yourListData: List<Task>, var deleteFunctionFromMain: (Int)->Unit ): RecyclerView.Adapter<TaskAdapter.TaskViewHolder>()
-{
-    inner class TaskViewHolder(itemView: View) : RecyclerView.ViewHolder (itemView)
+class TaskAdapter( private val deleteFunctionFromMain: (Task) -> Unit ) : ListAdapter<Task, TaskAdapter.TaskViewHolder>(DIFF_CALLBACK) {
+
+    class TaskViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TaskViewHolder {
-        val view: View = LayoutInflater.from(parent.context).inflate(R.layout.task_item_layout, parent, false)
+        val view = LayoutInflater.from(parent.context)
+            .inflate(R.layout.task_item_layout, parent, false)
         return TaskViewHolder(view)
     }
 
-    override fun getItemCount(): Int {
-        return yourListData.size
-    }
-
     override fun onBindViewHolder(holder: TaskViewHolder, position: Int) {
-        val currTask: Task = yourListData[position]
+        val currTask = getItem(position)
 
-        // 1. Get the TextView from the row layout
         val taskTV = holder.itemView.findViewById<TextView>(R.id.task_name_TV)
         val highPriorityIcon = holder.itemView.findViewById<ImageView>(R.id.highPriority_Icon)
 
-        // 2. Set its value
         taskTV.text = currTask.name
+        highPriorityIcon.visibility =
+            if (currTask.isHighPriority) View.VISIBLE else View.GONE
 
-        if (currTask.isHighPriority) {
-            highPriorityIcon.visibility = View.VISIBLE
+        holder.itemView.findViewById<ImageView>(R.id.delete_IV).setOnClickListener {
+            val pos = holder.adapterPosition
+            if (pos != RecyclerView.NO_POSITION) {
+                deleteFunctionFromMain(currTask)
+            }
         }
-        // 3. attach a click handler to a button
-        val imageView = holder.itemView.findViewById<ImageView>(R.id.delete_IV)
-        imageView.setOnClickListener {
-            deleteFunctionFromMain(position)
+    }
+    companion object {
+        val DIFF_CALLBACK = object : DiffUtil.ItemCallback<Task>() {
+            override fun areItemsTheSame(oldItem: Task, newItem: Task): Boolean {
+                return oldItem.name == newItem.name
+            }
+
+            override fun areContentsTheSame(oldItem: Task, newItem: Task): Boolean {
+                return oldItem == newItem
+            }
         }
     }
 }
-
