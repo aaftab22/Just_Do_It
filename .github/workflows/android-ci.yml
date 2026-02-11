@@ -2,7 +2,7 @@ name: Android CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "dev" ]
   pull_request:
     branches: ["main"]
 
@@ -32,6 +32,12 @@ jobs:
 
       - name: Build debug APK
         run: ./gradlew assembleDebug
+
+      - name: Run Unit test
+        run: ./gradlew testDebugUnitTest
+
+      - name: Run Lint
+        run: ./gradlew lintDebug
 
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
