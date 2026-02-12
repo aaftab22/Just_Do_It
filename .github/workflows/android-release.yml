@@ -4,7 +4,6 @@ on:
   push:
     tags:
       - "v*"
-
 jobs:
   release:
     runs-on: ubuntu-latest
@@ -45,3 +44,11 @@ jobs:
         with:
           name: release-aab
           path: app/build/outputs/bundle/release/app-release.aab
+
+      - name: Upload to Play Store (Internal)
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          packageName: com.darksunTechnologies.justdoit
+          releaseFiles: app/build/outputs/bundle/release/app-release.aab
+          track: internal
