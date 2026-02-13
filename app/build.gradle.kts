@@ -20,7 +20,7 @@ android {
         applicationId = "com.darksunTechnologies.justdoit"
         minSdk = 24
         //noinspection OldTargetApi
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 10
         versionName = "1.7.6"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
