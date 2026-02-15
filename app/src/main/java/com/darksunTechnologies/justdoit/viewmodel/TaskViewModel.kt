@@ -15,6 +15,7 @@ class TaskViewModel(application: Application): AndroidViewModel(application) {
     private val dao = AppDatabase.getInstance(application).taskDao()
     private val repository = TaskRepository(dao)
     private var recentlyDeletedTask: Task? = null
+    private var recentlyDeletedTasks: List<Task>? = null
     val tasks: LiveData<List<Task>> = repository.getAllTasks().asLiveData()
 
     fun addTask(task: Task) = viewModelScope.launch {
@@ -35,6 +36,15 @@ class TaskViewModel(application: Application): AndroidViewModel(application) {
     }
 
     fun clearAll() = viewModelScope.launch {
+        recentlyDeletedTasks = tasks.value.orEmpty()
         repository.deleteAll()
+    }
+
+    fun undoDeleteAll() {
+        recentlyDeletedTasks?.let { list ->
+            viewModelScope.launch {
+                list.forEach { repository.insertTask(it) }
+            }
+        }
     }
 }

@@ -7,6 +7,7 @@ import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import androidx.activity.viewModels
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DividerItemDecoration
@@ -27,6 +28,12 @@ class MainActivity : AppCompatActivity() {
 
     private val deleteItemFromList: (Task) -> Unit = { task ->
         viewModel.deleteTask(task)
+
+        Snackbar.make(binding.root, "Task Deleted", Snackbar.LENGTH_LONG)
+            .setAction("UNDO") {
+                viewModel.undoDelete()
+            }
+            .show()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -52,10 +59,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         this.binding.tasksRV.addItemDecoration(
-            DividerItemDecoration(
-                this,
-                LinearLayoutManager.VERTICAL
-            )
+            DividerItemDecoration(this, LinearLayoutManager.VERTICAL)
         )
 
         //add button onClickListener
@@ -111,10 +115,20 @@ class MainActivity : AppCompatActivity() {
 
     private fun deleteAll() {
         // delete all items in the list
-        viewModel.clearAll()
+        AlertDialog.Builder(this)
+            .setTitle("Delete all tasks?")
+            .setMessage("This action cannot be undone.")
+            .setPositiveButton("Delete") { _, _ ->
+                viewModel.clearAll()
 
-        val snackBar = Snackbar.make(binding.root, "All items deleted!", Snackbar.LENGTH_LONG)
-        snackBar.show()
+                Snackbar.make(binding.root, "All items deleted!", Snackbar.LENGTH_LONG)
+                    .setAction("UNDO") {
+                        viewModel.undoDeleteAll()
+                    }
+                    .show()
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
 
     private fun attachSwipeToDelete() {
