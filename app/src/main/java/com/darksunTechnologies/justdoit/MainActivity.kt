@@ -10,7 +10,9 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DividerItemDecoration
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.darksunTechnologies.justdoit.adapters.TaskAdapter
 import com.darksunTechnologies.justdoit.databinding.ActivityMainBinding
 import com.darksunTechnologies.justdoit.models.Task
@@ -42,6 +44,8 @@ class MainActivity : AppCompatActivity() {
         myAdapter = TaskAdapter(deleteItemFromList)
         binding.tasksRV.adapter = myAdapter
         binding.tasksRV.layoutManager = LinearLayoutManager(this)
+
+        attachSwipeToDelete()
 
         viewModel.tasks.observe(this) { list ->
             myAdapter.submitList(list)
@@ -111,5 +115,29 @@ class MainActivity : AppCompatActivity() {
 
         val snackBar = Snackbar.make(binding.root, "All items deleted!", Snackbar.LENGTH_LONG)
         snackBar.show()
+    }
+
+    private fun attachSwipeToDelete() {
+        val swipeCallback = object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT) {
+            override fun onMove(
+                recyclerView: RecyclerView,
+                viewHolder: RecyclerView.ViewHolder,
+                target: RecyclerView.ViewHolder
+            ): Boolean = false
+
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                val position = viewHolder.adapterPosition
+                val task = myAdapter.currentList[position]
+
+                viewModel.deleteTask(task)
+
+                Snackbar.make(binding.root, "Task Deleted", Snackbar.LENGTH_LONG)
+                    .setAction("UNDO") {
+                        viewModel.undoDelete()
+                    }
+                    .show()
+            }
+        }
+        ItemTouchHelper(swipeCallback).attachToRecyclerView(binding.tasksRV)
     }
 }
