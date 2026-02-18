@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="delete_all">DELETE ALL TASKS</string>
+    <string name="about_us">ABOUT US</string>
+    <string name="backup_tasks">Backup tasks</string>
+</resources>

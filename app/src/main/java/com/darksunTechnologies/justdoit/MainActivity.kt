@@ -1,11 +1,12 @@
 package com.darksunTechnologies.justdoit
 
-import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
+import androidx.activity.addCallback
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -20,20 +21,22 @@ import com.darksunTechnologies.justdoit.models.Task
 import com.darksunTechnologies.justdoit.viewmodel.TaskViewModel
 import com.google.android.material.snackbar.Snackbar
 
-class MainActivity : AppCompatActivity() {
 
+class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private val viewModel: TaskViewModel by viewModels()
     private lateinit var myAdapter: TaskAdapter
-
     private val deleteItemFromList: (Task) -> Unit = { task ->
         viewModel.deleteTask(task)
 
-        Snackbar.make(binding.root, "Task Deleted", Snackbar.LENGTH_LONG)
-            .setAction("UNDO") {
-                viewModel.undoDelete()
-            }
-            .show()
+        val snackBar = Snackbar.make(binding.root, "Task Deleted", Snackbar.LENGTH_INDEFINITE)
+        snackBar.setAction("UNDO") {
+            viewModel.undoDelete()
+            snackBar.dismiss()
+        }
+        snackBar.show()
+
+        snackBar.view.postDelayed({ snackBar.dismiss() }, 8000)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -52,12 +55,29 @@ class MainActivity : AppCompatActivity() {
         binding.tasksRV.adapter = myAdapter
         binding.tasksRV.layoutManager = LinearLayoutManager(this)
 
+        viewModel.migrateFromSharedPrefsIfNeeded(this)
+
+        onBackPressedDispatcher.addCallback(this) {
+            moveTaskToBack(true)
+        }
+
         attachSwipeToDelete()
 
         viewModel.tasks.observe(this) { list ->
             myAdapter.submitList(list)
         }
 
+//        viewModel.backupResult.observe(this) { result ->
+//            when (result) {
+//                is TaskViewModel.BackupResult.Success -> {
+//                    Snackbar.make(binding.root, result.message, Snackbar.LENGTH_LONG).show()
+//                }
+//                is TaskViewModel.BackupResult.Error -> {
+//                    Snackbar.make(binding.root, result.message, Snackbar.LENGTH_LONG).show()
+//                }
+//            }
+//        }
+//
         this.binding.tasksRV.addItemDecoration(
             DividerItemDecoration(this, LinearLayoutManager.VERTICAL)
         )
@@ -66,12 +86,6 @@ class MainActivity : AppCompatActivity() {
         binding.btnAdd.setOnClickListener {
             addTask()
         }
-    }
-
-    @Deprecated("Deprecated in Java", ReplaceWith("moveTaskToBack(true)"))
-    @SuppressLint("MissingSuperCall")
-    override fun onBackPressed() {
-        moveTaskToBack(true)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -92,11 +106,18 @@ class MainActivity : AppCompatActivity() {
                 startActivity(Intent(this, AboutUsActivity::class.java))
                 true
             }
+            R.id.backup_tasks -> {
+//                backupTasks()
+                true
+            }
+            R.id.restore_tasks -> {
+//                restoreTasks()
+                true
+            }
             else -> super.onOptionsItemSelected(item)
         }
     }
 
-    @SuppressLint("SetTextI18n")
     private fun addTask() {
         val nameFromUI:String = binding.taskNameET.text.toString()
         val isHighPriorityFromUI = binding.highPrioritySwitch.isChecked
@@ -112,6 +133,14 @@ class MainActivity : AppCompatActivity() {
         binding.taskNameET.setText("")
         binding.highPrioritySwitch.isChecked = false
     }
+
+//    private fun backupTasks() {
+//        viewModel.backupTasks(this)
+//    }
+//
+//    private fun restoreTasks() {
+//        viewModel.restoreTasks(this)
+//    }
 
     private fun deleteAll() {
         // delete all items in the list
