@@ -67,17 +67,6 @@ class MainActivity : AppCompatActivity() {
             myAdapter.submitList(list)
         }
 
-//        viewModel.backupResult.observe(this) { result ->
-//            when (result) {
-//                is TaskViewModel.BackupResult.Success -> {
-//                    Snackbar.make(binding.root, result.message, Snackbar.LENGTH_LONG).show()
-//                }
-//                is TaskViewModel.BackupResult.Error -> {
-//                    Snackbar.make(binding.root, result.message, Snackbar.LENGTH_LONG).show()
-//                }
-//            }
-//        }
-//
         this.binding.tasksRV.addItemDecoration(
             DividerItemDecoration(this, LinearLayoutManager.VERTICAL)
         )
@@ -106,14 +95,6 @@ class MainActivity : AppCompatActivity() {
                 startActivity(Intent(this, AboutUsActivity::class.java))
                 true
             }
-            R.id.backup_tasks -> {
-//                backupTasks()
-                true
-            }
-            R.id.restore_tasks -> {
-//                restoreTasks()
-                true
-            }
             else -> super.onOptionsItemSelected(item)
         }
     }
@@ -133,14 +114,6 @@ class MainActivity : AppCompatActivity() {
         binding.taskNameET.setText("")
         binding.highPrioritySwitch.isChecked = false
     }
-
-//    private fun backupTasks() {
-//        viewModel.backupTasks(this)
-//    }
-//
-//    private fun restoreTasks() {
-//        viewModel.restoreTasks(this)
-//    }
 
     private fun deleteAll() {
         // delete all items in the list

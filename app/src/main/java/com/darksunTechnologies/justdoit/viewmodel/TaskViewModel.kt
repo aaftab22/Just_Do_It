@@ -4,22 +4,14 @@ import android.app.Application
 import android.content.Context
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import com.darksunTechnologies.justdoit.database.AppDatabase
 import com.darksunTechnologies.justdoit.database.TaskRepository
 import com.darksunTechnologies.justdoit.models.Task
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.launch
 
 class TaskViewModel(application: Application): AndroidViewModel(application) {
-
-//    sealed class BackupResult {
-//        data class Success(val message: String) : BackupResult()
-//        data class Error(val message: String) : BackupResult()
-//    }
 
     private val dao = AppDatabase.getInstance(application).taskDao()
     private val repository = TaskRepository(dao)
@@ -27,8 +19,6 @@ class TaskViewModel(application: Application): AndroidViewModel(application) {
     private var recentlyDeletedTasks: List<Task>? = null
     val tasks: LiveData<List<Task>> = repository.getAllTasks().asLiveData()
 
-//    private val _backupResult = MutableLiveData<BackupResult>()
-//    val backupResult: LiveData<BackupResult> = _backupResult
 
     fun addTask(task: Task) = viewModelScope.launch {
         repository.insertTask(task)
@@ -59,49 +49,6 @@ class TaskViewModel(application: Application): AndroidViewModel(application) {
             }
         }
     }
-
-//    fun backupTasks(context: Context) = viewModelScope.launch {
-//        val list = repository.getAllTasksOnce()
-//        val json = exportTasksToJson(list)
-//
-//        try {
-//            val file = java.io.File(context.getExternalFilesDir(null), "tasks_backup.json")
-//            file.writeText(json)
-//            _backupResult.postValue(BackupResult.Success("Backup saved successfully! (${list.size} tasks)"))
-//        } catch (e: Exception) {
-//            e.printStackTrace()
-//            _backupResult.postValue(BackupResult.Error("Failed to save backup: ${e.message}"))
-//        }
-//
-//    }
-
-//    fun restoreTasks(context: Context) = viewModelScope.launch {
-//        try {
-//            val file = java.io.File(context.getExternalFilesDir(null), "tasks_backup.json")
-//            if (file.exists()) {
-//                val json = file.readText()
-//                val tasksToRestore = importTasksFromJson(json)
-//                tasksToRestore.forEach { task ->
-//                    repository.insertTask(task)
-//                }
-//                _backupResult.postValue(BackupResult.Success("Restored ${tasksToRestore.size} tasks successfully!"))
-//            } else {
-//                _backupResult.postValue(BackupResult.Error("No backup file found"))
-//            }
-//        } catch (e: Exception) {
-//            e.printStackTrace()
-//            _backupResult.postValue(BackupResult.Error("Failed to restore backup: ${e.message}"))
-//        }
-//    }
-
-//    fun exportTasksToJson(tasks: List<Task>): String {
-//        return Gson().toJson(tasks)
-//    }
-
-//    fun importTasksFromJson(json: String): List<Task> {
-//        val type = object : TypeToken<List<Task>>() {}.type
-//        return Gson().fromJson(json, type)
-//    }
 
     fun migrateFromSharedPrefsIfNeeded(context: Context) = viewModelScope.launch {
         val prefs = context.getSharedPreferences("Tasks", Context.MODE_PRIVATE)

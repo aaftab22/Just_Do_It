@@ -23,8 +23,8 @@
     <string name="next_btn">Next</string>
     <string name="gotIt_btn">Got It</string>
     <string name="page_indicator_description">This is page indicator</string>
-    <string name="delete_all">DELETE ALL TASKS</string>
-    <string name="about_us">ABOUT US</string>
+    <string name="delete_all">Delete all Tasks</string>
+    <string name="about_us">About Us</string>
     <string name="backup_tasks">Backup tasks</string>
     <string name="restore_tasks">Restore tasks</string>
 

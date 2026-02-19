@@ -8,12 +8,4 @@
         android:id="@+id/about_tab"
         android:title="@string/about_us" />
 
-    <item
-        android:id="@+id/backup_tasks"
-        android:title="@string/backup_tasks"/>
-
-    <item
-        android:id="@+id/restore_tasks"
-        android:title="@string/restore_tasks"/>
-
 </menu>
