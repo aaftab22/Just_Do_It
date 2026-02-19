@@ -22,4 +22,12 @@ interface TaskDao {
 
     @Query("DELETE FROM tasks")
     suspend fun deleteAll()
+
+    @Query("SELECT * FROM tasks")
+    suspend fun getAllTasksOnce(): List<Task>
+
+    //for migration to room from sharedPreferences
+    @Query("SELECT COUNT(*) FROM tasks")
+    suspend fun countTasks(): Int
+
 }

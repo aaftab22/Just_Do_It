@@ -1,11 +1,12 @@
 package com.darksunTechnologies.justdoit
 
-import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
+import androidx.activity.addCallback
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -20,20 +21,22 @@ import com.darksunTechnologies.justdoit.models.Task
 import com.darksunTechnologies.justdoit.viewmodel.TaskViewModel
 import com.google.android.material.snackbar.Snackbar
 
-class MainActivity : AppCompatActivity() {
 
+class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private val viewModel: TaskViewModel by viewModels()
     private lateinit var myAdapter: TaskAdapter
-
     private val deleteItemFromList: (Task) -> Unit = { task ->
         viewModel.deleteTask(task)
 
-        Snackbar.make(binding.root, "Task Deleted", Snackbar.LENGTH_LONG)
-            .setAction("UNDO") {
-                viewModel.undoDelete()
-            }
-            .show()
+        val snackBar = Snackbar.make(binding.root, "Task Deleted", Snackbar.LENGTH_INDEFINITE)
+        snackBar.setAction("UNDO") {
+            viewModel.undoDelete()
+            snackBar.dismiss()
+        }
+        snackBar.show()
+
+        snackBar.view.postDelayed({ snackBar.dismiss() }, 8000)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -52,6 +55,12 @@ class MainActivity : AppCompatActivity() {
         binding.tasksRV.adapter = myAdapter
         binding.tasksRV.layoutManager = LinearLayoutManager(this)
 
+        viewModel.migrateFromSharedPrefsIfNeeded(this)
+
+        onBackPressedDispatcher.addCallback(this) {
+            moveTaskToBack(true)
+        }
+
         attachSwipeToDelete()
 
         viewModel.tasks.observe(this) { list ->
@@ -66,12 +75,6 @@ class MainActivity : AppCompatActivity() {
         binding.btnAdd.setOnClickListener {
             addTask()
         }
-    }
-
-    @Deprecated("Deprecated in Java", ReplaceWith("moveTaskToBack(true)"))
-    @SuppressLint("MissingSuperCall")
-    override fun onBackPressed() {
-        moveTaskToBack(true)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -96,7 +99,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    @SuppressLint("SetTextI18n")
     private fun addTask() {
         val nameFromUI:String = binding.taskNameET.text.toString()
         val isHighPriorityFromUI = binding.highPrioritySwitch.isChecked
