@@ -2,11 +2,10 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:id="@+id/delete_all_tab"
-        android:title="DELETE ALL TASKS"
-        />
+        android:title="@string/delete_all" />
+
     <item
         android:id="@+id/about_tab"
-        android:title="ABOUT US"
-        />
+        android:title="@string/about_us" />
 
 </menu>

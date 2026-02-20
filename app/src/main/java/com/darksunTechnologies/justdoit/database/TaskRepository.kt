@@ -12,4 +12,8 @@ class TaskRepository (private val dao: TaskDao) {
     suspend fun deleteTask(task: Task) = dao.deleteTask(task)
 
     suspend fun deleteAll() = dao.deleteAll()
+
+    suspend fun getAllTasksOnce(): List<Task> = dao.getAllTasksOnce()
+
+    suspend fun countTasks(): Int = dao.countTasks()
 }
