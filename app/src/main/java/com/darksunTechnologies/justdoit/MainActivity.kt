@@ -2,11 +2,11 @@ package com.darksunTechnologies.justdoit
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import androidx.activity.addCallback
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -20,7 +20,6 @@ import com.darksunTechnologies.justdoit.databinding.ActivityMainBinding
 import com.darksunTechnologies.justdoit.models.Task
 import com.darksunTechnologies.justdoit.viewmodel.TaskViewModel
 import com.google.android.material.snackbar.Snackbar
-
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
@@ -67,17 +66,17 @@ class MainActivity : AppCompatActivity() {
             myAdapter.submitList(list)
         }
 
-//        viewModel.backupResult.observe(this) { result ->
-//            when (result) {
-//                is TaskViewModel.BackupResult.Success -> {
-//                    Snackbar.make(binding.root, result.message, Snackbar.LENGTH_LONG).show()
-//                }
-//                is TaskViewModel.BackupResult.Error -> {
-//                    Snackbar.make(binding.root, result.message, Snackbar.LENGTH_LONG).show()
-//                }
-//            }
-//        }
-//
+        viewModel.backupResult.observe(this) { result ->
+            when (result) {
+                is TaskViewModel.BackupResult.Success -> {
+                    Snackbar.make(binding.root, result.message, Snackbar.LENGTH_LONG).show()
+                }
+                is TaskViewModel.BackupResult.Error -> {
+                    Snackbar.make(binding.root, result.message, Snackbar.LENGTH_LONG).show()
+                }
+            }
+        }
+
         this.binding.tasksRV.addItemDecoration(
             DividerItemDecoration(this, LinearLayoutManager.VERTICAL)
         )
@@ -95,10 +94,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        // Handle item selection.
         return when (item.itemId) {
             R.id.delete_all_tab -> {
-                // do something
                 deleteAll()
                 true
             }
@@ -107,11 +104,11 @@ class MainActivity : AppCompatActivity() {
                 true
             }
             R.id.backup_tasks -> {
-//                backupTasks()
+                createBackupFileLauncher.launch("justdoit_tasks_backup.json")
                 true
             }
             R.id.restore_tasks -> {
-//                restoreTasks()
+                pickRestoreFileLauncher.launch(arrayOf("application/json"))
                 true
             }
             else -> super.onOptionsItemSelected(item)
@@ -133,14 +130,6 @@ class MainActivity : AppCompatActivity() {
         binding.taskNameET.setText("")
         binding.highPrioritySwitch.isChecked = false
     }
-
-//    private fun backupTasks() {
-//        viewModel.backupTasks(this)
-//    }
-//
-//    private fun restoreTasks() {
-//        viewModel.restoreTasks(this)
-//    }
 
     private fun deleteAll() {
         // delete all items in the list
@@ -183,4 +172,18 @@ class MainActivity : AppCompatActivity() {
         }
         ItemTouchHelper(swipeCallback).attachToRecyclerView(binding.tasksRV)
     }
+
+    private val createBackupFileLauncher =
+        registerForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri ->
+            if (uri != null) {
+                viewModel.backupToUri(this, uri)
+            }
+        }
+
+    private val pickRestoreFileLauncher =
+        registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+            if (uri != null) {
+                viewModel.restoreFromUri(this, uri)
+            }
+        }
 }
