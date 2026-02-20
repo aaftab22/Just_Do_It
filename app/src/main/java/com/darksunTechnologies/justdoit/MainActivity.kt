@@ -2,7 +2,6 @@ package com.darksunTechnologies.justdoit
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
@@ -87,7 +86,6 @@ class MainActivity : AppCompatActivity() {
         // Handle item selection.
         return when (item.itemId) {
             R.id.delete_all_tab -> {
-                // do something
                 deleteAll()
                 true
             }
