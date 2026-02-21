@@ -89,7 +89,14 @@ class TaskViewModel(application: Application): AndroidViewModel(application) {
                 ?.use { it.readText() } ?: return@launch
 
             val type = object : TypeToken<List<Task>>() {}.type
+
             val restoredTasks = Gson().fromJson<List<Task>>(json, type)
+                ?: throw IllegalStateException("Backup file is empty or invalid")
+
+            if (restoredTasks.isEmpty()) {
+                throw IllegalStateException("Backup file contains no tasks")
+            }
+
             val existingKeys = repository.getTaskKeys().toSet()
             var insertedCount = 0
 

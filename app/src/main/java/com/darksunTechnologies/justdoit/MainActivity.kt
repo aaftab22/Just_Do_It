@@ -11,6 +11,7 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.core.widget.addTextChangedListener
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -81,6 +82,12 @@ class MainActivity : AppCompatActivity() {
             DividerItemDecoration(this, LinearLayoutManager.VERTICAL)
         )
 
+        binding.btnAdd.isEnabled = false
+
+        binding.taskNameET.addTextChangedListener { text ->
+            binding.btnAdd.isEnabled = !text.isNullOrEmpty()
+        }
+
         //add button onClickListener
         binding.btnAdd.setOnClickListener {
             addTask()
@@ -104,6 +111,10 @@ class MainActivity : AppCompatActivity() {
                 true
             }
             R.id.backup_tasks -> {
+                if (viewModel.tasks.value.isNullOrEmpty()) {
+                    Snackbar.make(binding.root, "No tasks to backup", Snackbar.LENGTH_SHORT).show()
+                    return true
+                }
                 createBackupFileLauncher.launch("justdoit_tasks_backup.json")
                 true
             }
@@ -119,10 +130,6 @@ class MainActivity : AppCompatActivity() {
         val nameFromUI:String = binding.taskNameET.text.toString()
         val isHighPriorityFromUI = binding.highPrioritySwitch.isChecked
 
-        if (nameFromUI.isBlank()) {
-            Snackbar.make(binding.root, "Please enter a task", Snackbar.LENGTH_LONG).show()
-            return
-        }
         val taskToAdd = Task(0,name = nameFromUI, isHighPriority = isHighPriorityFromUI)
         viewModel.addTask(taskToAdd)
 
