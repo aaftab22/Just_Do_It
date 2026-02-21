@@ -6,10 +6,12 @@ import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import androidx.activity.addCallback
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.core.widget.addTextChangedListener
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -19,7 +21,6 @@ import com.darksunTechnologies.justdoit.databinding.ActivityMainBinding
 import com.darksunTechnologies.justdoit.models.Task
 import com.darksunTechnologies.justdoit.viewmodel.TaskViewModel
 import com.google.android.material.snackbar.Snackbar
-
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
@@ -66,9 +67,26 @@ class MainActivity : AppCompatActivity() {
             myAdapter.submitList(list)
         }
 
+        viewModel.backupResult.observe(this) { result ->
+            when (result) {
+                is TaskViewModel.BackupResult.Success -> {
+                    Snackbar.make(binding.root, result.message, Snackbar.LENGTH_LONG).show()
+                }
+                is TaskViewModel.BackupResult.Error -> {
+                    Snackbar.make(binding.root, result.message, Snackbar.LENGTH_LONG).show()
+                }
+            }
+        }
+
         this.binding.tasksRV.addItemDecoration(
             DividerItemDecoration(this, LinearLayoutManager.VERTICAL)
         )
+
+        binding.btnAdd.isEnabled = false
+
+        binding.taskNameET.addTextChangedListener { text ->
+            binding.btnAdd.isEnabled = !text.isNullOrEmpty()
+        }
 
         //add button onClickListener
         binding.btnAdd.setOnClickListener {
@@ -83,7 +101,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        // Handle item selection.
         return when (item.itemId) {
             R.id.delete_all_tab -> {
                 deleteAll()
@@ -91,6 +108,18 @@ class MainActivity : AppCompatActivity() {
             }
             R.id.about_tab -> {
                 startActivity(Intent(this, AboutUsActivity::class.java))
+                true
+            }
+            R.id.backup_tasks -> {
+                if (viewModel.tasks.value.isNullOrEmpty()) {
+                    Snackbar.make(binding.root, "No tasks to backup", Snackbar.LENGTH_SHORT).show()
+                    return true
+                }
+                createBackupFileLauncher.launch("justdoit_tasks_backup.json")
+                true
+            }
+            R.id.restore_tasks -> {
+                pickRestoreFileLauncher.launch(arrayOf("application/json"))
                 true
             }
             else -> super.onOptionsItemSelected(item)
@@ -101,10 +130,6 @@ class MainActivity : AppCompatActivity() {
         val nameFromUI:String = binding.taskNameET.text.toString()
         val isHighPriorityFromUI = binding.highPrioritySwitch.isChecked
 
-        if (nameFromUI.isBlank()) {
-            Snackbar.make(binding.root, "Please enter a task", Snackbar.LENGTH_LONG).show()
-            return
-        }
         val taskToAdd = Task(0,name = nameFromUI, isHighPriority = isHighPriorityFromUI)
         viewModel.addTask(taskToAdd)
 
@@ -154,4 +179,18 @@ class MainActivity : AppCompatActivity() {
         }
         ItemTouchHelper(swipeCallback).attachToRecyclerView(binding.tasksRV)
     }
+
+    private val createBackupFileLauncher =
+        registerForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri ->
+            if (uri != null) {
+                viewModel.backupToUri(this, uri)
+            }
+        }
+
+    private val pickRestoreFileLauncher =
+        registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+            if (uri != null) {
+                viewModel.restoreFromUri(this, uri)
+            }
+        }
 }
