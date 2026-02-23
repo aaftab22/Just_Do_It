@@ -73,5 +73,8 @@ dependencies {
     implementation(libs.room.ktx)
     kapt(libs.room.compiler)
 
+    //swipe delete visual feedback
+    implementation(libs.recyclerview.swipedecorator)
+
     implementation(libs.androidx.lifecycle.livedata.ktx)
 }

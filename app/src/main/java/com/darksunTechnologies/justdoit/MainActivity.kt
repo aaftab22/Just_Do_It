@@ -1,6 +1,8 @@
 package com.darksunTechnologies.justdoit
 
 import android.content.Intent
+import android.graphics.Canvas
+import android.graphics.Color
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuInflater
@@ -21,23 +23,12 @@ import com.darksunTechnologies.justdoit.databinding.ActivityMainBinding
 import com.darksunTechnologies.justdoit.models.Task
 import com.darksunTechnologies.justdoit.viewmodel.TaskViewModel
 import com.google.android.material.snackbar.Snackbar
+import it.xabaras.android.recyclerview.swipedecorator.RecyclerViewSwipeDecorator
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private val viewModel: TaskViewModel by viewModels()
     private lateinit var myAdapter: TaskAdapter
-    private val deleteItemFromList: (Task) -> Unit = { task ->
-        viewModel.deleteTask(task)
-
-        val snackBar = Snackbar.make(binding.root, "Task Deleted", Snackbar.LENGTH_INDEFINITE)
-        snackBar.setAction("UNDO") {
-            viewModel.undoDelete()
-            snackBar.dismiss()
-        }
-        snackBar.show()
-
-        snackBar.view.postDelayed({ snackBar.dismiss() }, 8000)
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -51,7 +42,7 @@ class MainActivity : AppCompatActivity() {
             ContextCompat.getColor(this, android.R.color.white)
         )
 
-        myAdapter = TaskAdapter(deleteItemFromList)
+        myAdapter = TaskAdapter()
         binding.tasksRV.adapter = myAdapter
         binding.tasksRV.layoutManager = LinearLayoutManager(this)
 
@@ -77,10 +68,6 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
-
-        this.binding.tasksRV.addItemDecoration(
-            DividerItemDecoration(this, LinearLayoutManager.VERTICAL)
-        )
 
         binding.btnAdd.isEnabled = false
 
@@ -157,7 +144,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun attachSwipeToDelete() {
-        val swipeCallback = object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT) {
+
+        val swipeCallback = object :
+            ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
+
             override fun onMove(
                 recyclerView: RecyclerView,
                 viewHolder: RecyclerView.ViewHolder,
@@ -176,7 +166,35 @@ class MainActivity : AppCompatActivity() {
                     }
                     .show()
             }
+
+            override fun onChildDraw(
+                c: Canvas,
+                recyclerView: RecyclerView,
+                viewHolder: RecyclerView.ViewHolder,
+                dX: Float,
+                dY: Float,
+                actionState: Int,
+                isCurrentlyActive: Boolean
+            ) {
+                RecyclerViewSwipeDecorator.Builder(
+                    c,
+                    recyclerView,
+                    viewHolder,
+                    dX,
+                    dY,
+                    actionState,
+                    isCurrentlyActive
+                )
+                    .addSwipeLeftBackgroundColor(Color.RED)
+                    .addSwipeLeftActionIcon(R.drawable.delete)
+                    .setSwipeLeftActionIconTint(Color.WHITE)
+                    .create()
+                    .decorate()
+
+                super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
+            }
         }
+
         ItemTouchHelper(swipeCallback).attachToRecyclerView(binding.tasksRV)
     }
 

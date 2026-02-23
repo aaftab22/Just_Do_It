@@ -11,8 +11,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.darksunTechnologies.justdoit.R
 import com.darksunTechnologies.justdoit.models.Task
 
-class TaskAdapter( private val deleteFunctionFromMain: (Task) -> Unit ) : ListAdapter<Task, TaskAdapter.TaskViewHolder>(DIFF_CALLBACK) {
-
+class TaskAdapter: ListAdapter<Task, TaskAdapter.TaskViewHolder>(DIFF_CALLBACK) {
     class TaskViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TaskViewHolder {
@@ -30,13 +29,6 @@ class TaskAdapter( private val deleteFunctionFromMain: (Task) -> Unit ) : ListAd
         taskTV.text = currTask.name
         highPriorityIcon.visibility =
             if (currTask.isHighPriority) View.VISIBLE else View.GONE
-
-        holder.itemView.findViewById<ImageView>(R.id.delete_IV).setOnClickListener {
-            val pos = holder.adapterPosition
-            if (pos != RecyclerView.NO_POSITION) {
-                deleteFunctionFromMain(currTask)
-            }
-        }
     }
     companion object {
         val DIFF_CALLBACK = object : DiffUtil.ItemCallback<Task>() {
