@@ -1,16 +1,19 @@
 package com.darksunTechnologies.justdoit
 
 import android.content.Intent
+import android.graphics.Canvas
+import android.graphics.Color
 import android.os.Bundle
-import android.util.Log
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import androidx.activity.addCallback
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.core.widget.addTextChangedListener
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -20,24 +23,12 @@ import com.darksunTechnologies.justdoit.databinding.ActivityMainBinding
 import com.darksunTechnologies.justdoit.models.Task
 import com.darksunTechnologies.justdoit.viewmodel.TaskViewModel
 import com.google.android.material.snackbar.Snackbar
-
+import it.xabaras.android.recyclerview.swipedecorator.RecyclerViewSwipeDecorator
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private val viewModel: TaskViewModel by viewModels()
     private lateinit var myAdapter: TaskAdapter
-    private val deleteItemFromList: (Task) -> Unit = { task ->
-        viewModel.deleteTask(task)
-
-        val snackBar = Snackbar.make(binding.root, "Task Deleted", Snackbar.LENGTH_INDEFINITE)
-        snackBar.setAction("UNDO") {
-            viewModel.undoDelete()
-            snackBar.dismiss()
-        }
-        snackBar.show()
-
-        snackBar.view.postDelayed({ snackBar.dismiss() }, 8000)
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -51,7 +42,7 @@ class MainActivity : AppCompatActivity() {
             ContextCompat.getColor(this, android.R.color.white)
         )
 
-        myAdapter = TaskAdapter(deleteItemFromList)
+        myAdapter = TaskAdapter()
         binding.tasksRV.adapter = myAdapter
         binding.tasksRV.layoutManager = LinearLayoutManager(this)
 
@@ -67,9 +58,22 @@ class MainActivity : AppCompatActivity() {
             myAdapter.submitList(list)
         }
 
-        this.binding.tasksRV.addItemDecoration(
-            DividerItemDecoration(this, LinearLayoutManager.VERTICAL)
-        )
+        viewModel.backupResult.observe(this) { result ->
+            when (result) {
+                is TaskViewModel.BackupResult.Success -> {
+                    Snackbar.make(binding.root, result.message, Snackbar.LENGTH_LONG).show()
+                }
+                is TaskViewModel.BackupResult.Error -> {
+                    Snackbar.make(binding.root, result.message, Snackbar.LENGTH_LONG).show()
+                }
+            }
+        }
+
+        binding.btnAdd.isEnabled = false
+
+        binding.taskNameET.addTextChangedListener { text ->
+            binding.btnAdd.isEnabled = !text.isNullOrEmpty()
+        }
 
         //add button onClickListener
         binding.btnAdd.setOnClickListener {
@@ -84,15 +88,25 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        // Handle item selection.
         return when (item.itemId) {
             R.id.delete_all_tab -> {
-                // do something
                 deleteAll()
                 true
             }
             R.id.about_tab -> {
                 startActivity(Intent(this, AboutUsActivity::class.java))
+                true
+            }
+            R.id.backup_tasks -> {
+                if (viewModel.tasks.value.isNullOrEmpty()) {
+                    Snackbar.make(binding.root, "No tasks to backup", Snackbar.LENGTH_SHORT).show()
+                    return true
+                }
+                createBackupFileLauncher.launch("justdoit_tasks_backup.json")
+                true
+            }
+            R.id.restore_tasks -> {
+                pickRestoreFileLauncher.launch(arrayOf("application/json"))
                 true
             }
             else -> super.onOptionsItemSelected(item)
@@ -103,10 +117,6 @@ class MainActivity : AppCompatActivity() {
         val nameFromUI:String = binding.taskNameET.text.toString()
         val isHighPriorityFromUI = binding.highPrioritySwitch.isChecked
 
-        if (nameFromUI.isBlank()) {
-            Snackbar.make(binding.root, "Please enter a task", Snackbar.LENGTH_LONG).show()
-            return
-        }
         val taskToAdd = Task(0,name = nameFromUI, isHighPriority = isHighPriorityFromUI)
         viewModel.addTask(taskToAdd)
 
@@ -134,7 +144,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun attachSwipeToDelete() {
-        val swipeCallback = object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT) {
+
+        val swipeCallback = object :
+            ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
+
             override fun onMove(
                 recyclerView: RecyclerView,
                 viewHolder: RecyclerView.ViewHolder,
@@ -153,7 +166,49 @@ class MainActivity : AppCompatActivity() {
                     }
                     .show()
             }
+
+            override fun onChildDraw(
+                c: Canvas,
+                recyclerView: RecyclerView,
+                viewHolder: RecyclerView.ViewHolder,
+                dX: Float,
+                dY: Float,
+                actionState: Int,
+                isCurrentlyActive: Boolean
+            ) {
+                RecyclerViewSwipeDecorator.Builder(
+                    c,
+                    recyclerView,
+                    viewHolder,
+                    dX,
+                    dY,
+                    actionState,
+                    isCurrentlyActive
+                )
+                    .addSwipeLeftBackgroundColor(Color.RED)
+                    .addSwipeLeftActionIcon(R.drawable.delete)
+                    .setSwipeLeftActionIconTint(Color.WHITE)
+                    .create()
+                    .decorate()
+
+                super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
+            }
         }
+
         ItemTouchHelper(swipeCallback).attachToRecyclerView(binding.tasksRV)
     }
+
+    private val createBackupFileLauncher =
+        registerForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri ->
+            if (uri != null) {
+                viewModel.backupToUri(this, uri)
+            }
+        }
+
+    private val pickRestoreFileLauncher =
+        registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+            if (uri != null) {
+                viewModel.restoreFromUri(this, uri)
+            }
+        }
 }

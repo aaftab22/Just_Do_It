@@ -6,6 +6,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.darksunTechnologies.justdoit.models.Task
+import com.darksunTechnologies.justdoit.models.TaskKey
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -30,4 +31,6 @@ interface TaskDao {
     @Query("SELECT COUNT(*) FROM tasks")
     suspend fun countTasks(): Int
 
+    @Query("SELECT name, isHighPriority FROM tasks")
+    suspend fun getTaskKeys(): List<TaskKey>
 }
