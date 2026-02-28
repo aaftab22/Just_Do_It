@@ -68,7 +68,7 @@ class TaskViewModel(application: Application): AndroidViewModel(application) {
             val list = repository.getAllTasksOnce()
             val json = Gson().toJson(list)
 
-            context.contentResolver.openOutputStream(uri)?.use { out ->
+            context.contentResolver.openOutputStream(uri, "wt")?.use { out ->
                 out.write(json.toByteArray())
             }
 

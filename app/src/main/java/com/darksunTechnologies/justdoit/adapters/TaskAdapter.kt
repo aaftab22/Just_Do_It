@@ -1,5 +1,6 @@
 package com.darksunTechnologies.justdoit.adapters
 
+import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -8,6 +9,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.darksunTechnologies.justdoit.TaskDetailActivity
 import com.darksunTechnologies.justdoit.R
 import com.darksunTechnologies.justdoit.models.Task
 
@@ -29,7 +31,16 @@ class TaskAdapter: ListAdapter<Task, TaskAdapter.TaskViewHolder>(DIFF_CALLBACK) 
         taskTV.text = currTask.name
         highPriorityIcon.visibility =
             if (currTask.isHighPriority) View.VISIBLE else View.GONE
+
+        holder.itemView.setOnClickListener {
+            val context = holder.itemView.context
+            val intent = Intent(context, TaskDetailActivity::class.java)
+            intent.putExtra("task_name", currTask.name)
+            intent.putExtra("task_priority", currTask.isHighPriority)
+            context.startActivity(intent)
+        }
     }
+
     companion object {
         val DIFF_CALLBACK = object : DiffUtil.ItemCallback<Task>() {
             override fun areItemsTheSame(oldItem: Task, newItem: Task): Boolean {
