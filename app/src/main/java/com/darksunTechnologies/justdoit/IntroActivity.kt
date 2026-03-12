@@ -3,6 +3,7 @@ package com.darksunTechnologies.justdoit
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.datastore.preferences.core.edit
 import androidx.lifecycle.lifecycleScope
@@ -18,11 +19,17 @@ class IntroActivity : AppCompatActivity() {
     private lateinit var binding:ActivityIntroBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
 
         binding = ActivityIntroBinding.inflate(layoutInflater)
 
         setContentView(binding.root)
+        androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(binding.main) { v, insets ->
+            val systemBars = insets.getInsets(androidx.core.view.WindowInsetsCompat.Type.systemBars())
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            insets
+        }
 
         val viewPager = binding.productImagesViewpager
         val tabLayout = binding.viewPagerIndicator
@@ -75,6 +82,7 @@ class IntroActivity : AppCompatActivity() {
             setFirstTimeFlag()
             val intent = Intent(this@IntroActivity, MainActivity::class.java)
             startActivity(intent)
+            finish()
         }
     }
 

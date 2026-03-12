@@ -5,7 +5,7 @@ plugins {
 }
 android {
     namespace = "com.darksunTechnologies.justdoit"
-    compileSdk = 36
+    compileSdk = 35
 
     signingConfigs {
         create("release") {
