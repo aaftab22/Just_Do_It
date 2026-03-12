@@ -25,6 +25,11 @@ class IntroActivity : AppCompatActivity() {
         binding = ActivityIntroBinding.inflate(layoutInflater)
 
         setContentView(binding.root)
+        androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(binding.main) { v, insets ->
+            val systemBars = insets.getInsets(androidx.core.view.WindowInsetsCompat.Type.systemBars())
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            insets
+        }
 
         val viewPager = binding.productImagesViewpager
         val tabLayout = binding.viewPagerIndicator
@@ -77,6 +82,7 @@ class IntroActivity : AppCompatActivity() {
             setFirstTimeFlag()
             val intent = Intent(this@IntroActivity, MainActivity::class.java)
             startActivity(intent)
+            finish()
         }
     }
 
