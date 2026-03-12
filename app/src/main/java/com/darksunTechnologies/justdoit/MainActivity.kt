@@ -8,13 +8,13 @@ import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import androidx.activity.addCallback
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.widget.addTextChangedListener
-import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -31,10 +31,16 @@ class MainActivity : AppCompatActivity() {
     private lateinit var myAdapter: TaskAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(binding.main) { v, insets ->
+            val systemBars = insets.getInsets(androidx.core.view.WindowInsetsCompat.Type.systemBars())
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            insets
+        }
         setSupportActionBar(binding.myToolbar)
 
         val overFlowIcon = binding.myToolbar.overflowIcon
@@ -155,7 +161,7 @@ class MainActivity : AppCompatActivity() {
             ): Boolean = false
 
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-                val position = viewHolder.adapterPosition
+                val position = viewHolder.bindingAdapterPosition
                 val task = myAdapter.currentList[position]
 
                 viewModel.deleteTask(task)
