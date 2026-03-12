@@ -2,6 +2,13 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="primary">#90CAF9</color>
-    <color name="onPrimary">#000000</color>
+    <color name="primary">#6A1B9A</color>
+    <color name="onPrimary">#FFFFFF</color>
+    <color name="purple_soft">#F3E8FF</color>
+    <color name="red_soft">#FFE4E6</color>
+    <color name="red_dark">#E11D48</color>
+    <color name="grey_light">#F3F4F6</color>
+    <color name="grey_medium">#9CA3AF</color>
+    <color name="text_main">#111827</color>
+    <color name="text_sec">#4B5563</color>
 </resources>

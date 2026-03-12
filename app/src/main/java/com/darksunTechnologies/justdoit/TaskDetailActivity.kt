@@ -24,7 +24,18 @@ class TaskDetailActivity : AppCompatActivity() {
         val name = intent.getStringExtra("task_name")
         val isHighPriority = intent.getBooleanExtra("task_priority", false)
 
-        binding.etTitle.setText(name)
-        binding.etDescription.setText(if (isHighPriority) "High Priority Task" else "Normal Priority Task")
+        binding.etTitle.text = name
+        
+        if (isHighPriority) {
+            binding.priorityValue.text = "High"
+            binding.priorityCard.setCardBackgroundColor(android.graphics.Color.parseColor("#FFE4E6"))
+            binding.priorityValue.setTextColor(android.graphics.Color.parseColor("#E11D48"))
+        } else {
+            binding.priorityValue.text = "Normal"
+            binding.priorityCard.setCardBackgroundColor(android.graphics.Color.parseColor("#F3F4F6"))
+            binding.priorityValue.setTextColor(android.graphics.Color.parseColor("#4B5563"))
+        }
+
+        binding.etDescription.text = if (isHighPriority) "High Priority Task" else "Normal Priority Task"
     }
 }
