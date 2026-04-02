@@ -33,4 +33,7 @@ interface TaskDao {
 
     @Query("SELECT name, isHighPriority FROM tasks")
     suspend fun getTaskKeys(): List<TaskKey>
+
+    @Query("SELECT * FROM tasks WHERE name LIKE '%' || :query || '%' OR description LIKE '%' || :query || '%' ORDER BY id DESC")
+    suspend fun searchTasks(query: String): List<Task>
 }
