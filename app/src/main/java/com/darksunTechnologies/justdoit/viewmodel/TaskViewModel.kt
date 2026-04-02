@@ -16,6 +16,7 @@ import kotlinx.coroutines.launch
 import androidx.core.content.edit
 import com.darksunTechnologies.justdoit.models.TaskKey
 import com.google.gson.reflect.TypeToken
+import androidx.lifecycle.switchMap
 
 class TaskViewModel(application: Application): AndroidViewModel(application) {
 
@@ -28,7 +29,20 @@ class TaskViewModel(application: Application): AndroidViewModel(application) {
     private val repository = TaskRepository(dao)
     private var recentlyDeletedTask: Task? = null
     private var recentlyDeletedTasks: List<Task>? = null
-    val tasks: LiveData<List<Task>> = repository.getAllTasks().asLiveData()
+    private val _searchQuery = MutableLiveData<String>("")
+    val tasks: LiveData<List<Task>> = _searchQuery.switchMap { query ->
+        if (query.isNullOrBlank()) {
+            repository.getAllTasks().asLiveData()
+        } else {
+            // Convert the search result list to a LiveData
+            val liveData = MutableLiveData<List<Task>>()
+            viewModelScope.launch {
+                liveData.postValue(repository.searchTasks(query))
+            }
+            liveData
+        }
+    }
+
 
     private val _backupResult = MutableLiveData<BackupResult>()
     val backupResult: LiveData<BackupResult> = _backupResult
@@ -129,7 +143,11 @@ class TaskViewModel(application: Application): AndroidViewModel(application) {
             oldTasks.forEach {
                 repository.insertTask(Task(name = it.name, isHighPriority = it.isHighPriority))
             }
-            prefs.edit { remove("taskList") }
+        prefs.edit { remove("taskList") }
         }
+    }
+
+    fun searchTasks(query: String) {
+        _searchQuery.value = query
     }
 }
