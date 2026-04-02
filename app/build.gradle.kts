@@ -18,11 +18,11 @@ android {
 
     defaultConfig {
         applicationId = "com.darksunTechnologies.justdoit"
-        minSdk = 24
+        minSdk = 26
         //noinspection OldTargetApi
         targetSdk = 35
-        versionCode = 15
-        versionName = "1.8.1"
+        versionCode = 16
+        versionName = "2.0.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -77,4 +77,8 @@ dependencies {
     implementation(libs.recyclerview.swipedecorator)
 
     implementation(libs.androidx.lifecycle.livedata.ktx)
+
+    //ViewPager2 + Fragment for tabs
+    implementation(libs.androidx.viewpager2)
+    implementation(libs.androidx.fragment.ktx)
 }
