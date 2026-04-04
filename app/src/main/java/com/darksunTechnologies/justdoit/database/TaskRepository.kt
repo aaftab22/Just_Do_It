@@ -18,4 +18,6 @@ class TaskRepository (private val dao: TaskDao) {
     suspend fun countTasks(): Int = dao.countTasks()
 
     suspend fun getTaskKeys() = dao.getTaskKeys()
+
+    suspend fun searchTasks(query: String) = dao.searchTasks(query)
 }

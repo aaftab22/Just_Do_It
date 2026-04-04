@@ -1,121 +1,221 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    tools:context=".AboutUsActivity"
-    android:fitsSystemWindows="true"
-    tools:ignore="ContentDescription">
+    android:background="#F8F9FA"
+    tools:context=".AboutUsActivity">
 
-    <androidx.appcompat.widget.Toolbar
-        android:id="@+id/my_toolbar"
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appBarLayout"
         android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        android:background="?attr/colorPrimary"
-        android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
-        app:title="About Us"
-        app:titleTextColor="@color/white"
-        app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
+        android:layout_height="250dp"
+        android:theme="@style/ThemeOverlay.MaterialComponents.Dark.ActionBar">
 
-    <ScrollView
+        <com.google.android.material.appbar.CollapsingToolbarLayout
+            android:id="@+id/collapsing_toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:contentScrim="?attr/colorPrimary"
+            app:expandedTitleMarginEnd="64dp"
+            app:expandedTitleMarginStart="48dp"
+            app:layout_scrollFlags="scroll|exitUntilCollapsed"
+            app:title="About Us"
+            app:collapsedTitleTextColor="@android:color/white"
+            app:expandedTitleTextColor="@android:color/white">
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:src="@drawable/about_page_header_bg"
+                app:layout_collapseMode="parallax" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="#66000000" />
+
+            <androidx.appcompat.widget.Toolbar
+                android:id="@+id/my_toolbar"
+                android:layout_width="match_parent"
+                android:layout_height="?attr/actionBarSize"
+                app:layout_collapseMode="pin" />
+
+        </com.google.android.material.appbar.CollapsingToolbarLayout>
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginTop="16dp"
-        android:padding="10dp">
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:padding="20dp"
+            android:clipToPadding="false">
 
-            <ImageView
-                android:id="@+id/profile_image"
-                android:layout_width="120dp"
-                android:layout_height="120dp"
-                android:layout_gravity="center"
+            <!-- Mission Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
-                android:src="@drawable/ic_launcher"
-                android:scaleType="centerCrop"
-                android:padding="4dp"
-                />
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp"
+                app:strokeWidth="0dp">
 
-            <TextView
-                android:id="@+id/title"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:text="@string/our_team_title"
-                android:textStyle="bold"
-                android:textSize="24sp"
-                android:paddingBottom="8dp"/>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="20dp">
 
-            <TextView
-                android:id="@+id/description"
-                android:layout_width="wrap_content"
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Our Mission"
+                        android:textColor="?attr/colorPrimary"
+                        android:textStyle="bold"
+                        android:textSize="18sp"
+                        android:layout_marginBottom="8dp"/>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/about_us_description"
+                        android:lineSpacingExtra="4dp"
+                        android:textSize="15sp"
+                        android:textColor="#444444"/>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Social Media Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/about_us_description"
-                android:textSize="16sp"
                 android:layout_marginBottom="16dp"
-                android:layout_gravity="center"/>
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp"
+                app:strokeWidth="0dp">
 
-            <LinearLayout
-                android:layout_width="wrap_content"
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="20dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Connect With Us"
+                        android:textColor="?attr/colorPrimary"
+                        android:textStyle="bold"
+                        android:textSize="18sp"
+                        android:layout_marginBottom="16dp"/>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center">
+
+                        <ImageView
+                            android:id="@+id/facebook_icon"
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:layout_marginHorizontal="12dp"
+                            android:src="@drawable/ic_facebook"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:onClick="workingOnIt"/>
+
+                        <ImageView
+                            android:id="@+id/twitter_icon"
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:layout_marginHorizontal="12dp"
+                            android:src="@drawable/ic_twitter"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:onClick="workingOnIt"/>
+
+                        <ImageView
+                            android:id="@+id/linkedin_icon"
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:layout_marginHorizontal="12dp"
+                            android:src="@drawable/ic_linkedin"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:onClick="workingOnIt"/>
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Contact Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:orientation="horizontal">
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp"
+                app:strokeWidth="0dp">
 
-                <ImageView
-                    android:id="@+id/facebook_icon"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:layout_margin="8dp"
-                    android:src="@drawable/ic_facebook"
-                    android:contentDescription="@string/facebook_icon_desc"
-                    android:onClick="workingOnIt"/>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="20dp"
+                    android:gravity="center">
 
-                <ImageView
-                    android:id="@+id/twitter_icon"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:layout_margin="8dp"
-                    android:src="@drawable/ic_twitter"
-                    android:contentDescription="@string/twitter_icon_desc"
-                    android:onClick="workingOnIt"/>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Get In Touch"
+                        android:textColor="?attr/colorPrimary"
+                        android:textStyle="bold"
+                        android:textSize="18sp"
+                        android:layout_marginBottom="8dp"/>
 
-                <ImageView
-                    android:id="@+id/linkedin_icon"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:layout_margin="8dp"
-                    android:src="@drawable/ic_linkedin"
-                    android:contentDescription="@string/linkedin_icon_desc"
-                    android:onClick="workingOnIt"/>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/complaint_here_email"
+                        android:textSize="14sp"
+                        android:textColor="#777777"/>
 
-            </LinearLayout>
+                    <TextView
+                        android:id="@+id/email_address"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/businessEmail"
+                        android:textSize="18sp"
+                        android:textStyle="bold"
+                        android:textColor="?attr/colorPrimary"
+                        android:autoLink="email"
+                        android:padding="12dp"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:background="?attr/selectableItemBackground"/>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
 
             <TextView
-                android:id="@+id/contact_email"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
                 android:layout_gravity="center"
-                android:text="@string/complaint_here_email"
-                android:textSize="16sp"
-                android:textColor="@android:color/black"/>
+                android:layout_marginTop="32dp"
+                android:text="v 1.2.0 - Crafted with Modernity"
+                android:textSize="12sp"
+                android:textColor="#AAAAAA"/>
 
-            <TextView
-                android:id="@+id/email_address"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:text="@string/businessEmail"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:textColor="@android:color/holo_blue_dark"
-                android:autoLink="email"
-                android:paddingTop="8dp"/>
         </LinearLayout>
-    </ScrollView>
-</LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

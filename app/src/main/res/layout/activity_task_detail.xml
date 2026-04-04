@@ -32,12 +32,12 @@
             android:layout_gravity="end"
             android:orientation="horizontal"
             android:paddingEnd="12dp">
-            
+
             <ImageView
                 android:layout_width="48dp"
                 android:layout_height="48dp"
                 android:padding="12dp"
-                android:src="@drawable/prioritize"
+                android:src="@drawable/ic_edit"
                 app:tint="@color/primary" />
 
         </LinearLayout>
@@ -61,121 +61,102 @@
             android:layout_height="wrap_content"
             android:padding="20dp">
 
-            <!-- Task/Note Toggle -->
-            <com.google.android.material.button.MaterialButtonToggleGroup
-                android:id="@+id/toggleGroup"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:checkedButton="@+id/btnTask"
-                app:layout_constraintTop_toTopOf="parent"
-                app:selectionRequired="true"
-                app:singleSelection="true">
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnTask"
-                    style="@style/Widget.Material3.Button.TonalButton"
-                    android:layout_width="0dp"
-                    android:layout_height="56dp"
-                    android:layout_weight="1"
-                    android:text="TASK"
-                    android:textStyle="bold"
-                    app:cornerRadius="12dp" />
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnNote"
-                    style="@style/Widget.Material3.Button.TextButton"
-                    android:layout_width="0dp"
-                    android:layout_height="56dp"
-                    android:layout_weight="1"
-                    android:text="NOTE"
-                    android:textColor="@color/text_sec"
-                    android:textStyle="bold"
-                    app:cornerRadius="12dp" />
-            </com.google.android.material.button.MaterialButtonToggleGroup>
-
             <!-- Task Title -->
             <TextView
                 android:id="@+id/etTitle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
+                android:layout_marginTop="8dp"
                 android:text="Buy groceries for dinner"
                 android:textColor="@color/text_main"
                 android:textSize="24sp"
                 android:textStyle="bold"
-                app:layout_constraintTop_toBottomOf="@id/toggleGroup" />
+                app:layout_constraintTop_toTopOf="parent" />
 
-            <!-- Labels -->
-            <TextView
-                android:id="@+id/labelPriority"
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:id="@+id/statusPriorityContainer"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
-                android:text="PRIORITY"
-                android:textColor="@color/text_sec"
-                android:textSize="12sp"
-                android:textStyle="bold"
+                android:orientation="horizontal"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/etTitle" />
+                app:layout_constraintTop_toBottomOf="@id/etTitle">
 
-            <TextView
-                android:id="@+id/labelStatus"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="80dp"
-                android:text="STATUS"
-                android:textColor="@color/text_sec"
-                android:textSize="12sp"
-                android:textStyle="bold"
-                app:layout_constraintStart_toEndOf="@id/labelPriority"
-                app:layout_constraintTop_toTopOf="@id/labelPriority" />
-
-            <!-- Chips -->
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/priorityCard"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                app:cardBackgroundColor="@color/red_soft"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="0dp"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/labelPriority">
-
-                <TextView
-                    android:id="@+id/priorityValue"
+                <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:paddingHorizontal="16dp"
-                    android:paddingVertical="8dp"
-                    android:text=" High"
-                    android:textColor="@color/red_dark"
-                    android:textStyle="bold" />
-            </com.google.android.material.card.MaterialCardView>
+                    android:orientation="vertical">
 
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/statusCard"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="24dp"
-                app:cardBackgroundColor="@color/white"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="0dp"
-                app:layout_constraintStart_toEndOf="@id/priorityCard"
-                app:layout_constraintTop_toTopOf="@id/priorityCard"
-                app:strokeColor="@color/grey_medium"
-                app:strokeWidth="1dp">
+                    <TextView
+                        android:id="@+id/labelPriority"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="16dp"
+                        android:text="PRIORITY"
+                        android:textColor="@color/text_sec"
+                        android:textSize="12sp"
+                        android:textStyle="bold" />
 
-                <TextView
-                    android:id="@+id/statusValue"
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/priorityCard"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        app:cardBackgroundColor="@color/red_soft"
+                        app:cardCornerRadius="16dp"
+                        app:cardElevation="0dp">
+
+                        <TextView
+                            android:id="@+id/priorityValue"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:paddingHorizontal="16dp"
+                            android:paddingVertical="8dp"
+                            android:text=" High"
+                            android:textColor="@color/red_dark"
+                            android:textStyle="bold" />
+                    </com.google.android.material.card.MaterialCardView>
+                </LinearLayout>
+
+                <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:paddingHorizontal="16dp"
-                    android:paddingVertical="8dp"
-                    android:text=" To Do"
-                    android:textColor="@color/text_main"
-                    android:textStyle="bold" />
-            </com.google.android.material.card.MaterialCardView>
+                    android:layout_marginStart="24dp"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/labelStatus"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="16dp"
+                        android:text="STATUS"
+                        android:textColor="@color/text_sec"
+                        android:textSize="12sp"
+                        android:textStyle="bold" />
+
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/statusCard"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        app:cardBackgroundColor="@color/white"
+                        app:cardCornerRadius="16dp"
+                        app:cardElevation="0dp"
+                        app:strokeColor="@color/grey_medium"
+                        app:strokeWidth="1dp">
+
+                        <TextView
+                            android:id="@+id/statusValue"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:paddingHorizontal="16dp"
+                            android:paddingVertical="8dp"
+                            android:text=" To Do"
+                            android:textColor="@color/text_main"
+                            android:textStyle="bold" />
+                    </com.google.android.material.card.MaterialCardView>
+                </LinearLayout>
+            </LinearLayout>
 
             <View
                 android:id="@+id/divider1"
@@ -183,7 +164,7 @@
                 android:layout_height="1dp"
                 android:layout_marginTop="24dp"
                 android:background="#EEEEEE"
-                app:layout_constraintTop_toBottomOf="@id/priorityCard" />
+                app:layout_constraintTop_toBottomOf="@id/statusPriorityContainer" />
 
             <!-- Due Date Section -->
             <ImageView
@@ -351,7 +332,7 @@
             <ImageView
                 android:layout_width="24dp"
                 android:layout_height="24dp"
-                android:src="@drawable/prioritize"
+                android:src="@drawable/ic_copy"
                 app:tint="@color/text_main" />
 
             <TextView
@@ -375,9 +356,10 @@
             <ImageView
                 android:layout_width="24dp"
                 android:layout_height="24dp"
-                android:src="@drawable/circle_background"
+                android:src="@drawable/ic_check"
+                android:background="@drawable/circle_background"
                 android:backgroundTint="#F3E8FF"
-                android:padding="2dp"
+                android:padding="4dp"
                 app:tint="@color/primary" />
 
             <TextView
