@@ -30,16 +30,16 @@ jobs:
           restore-keys: |
             gradle-${{ runner.os }}-
 
-      - name: Build debug APK
-        run: ./gradlew assembleDebug
-
-      - name: Run Unit test
-        run: ./gradlew testDebugUnitTest
+      - name: Build debug APK, Run Unit test
+        run: ./gradlew assembleDebug testDebugUnitTest
 
       - name: Run Lint
+        if: github.event_name == 'pull_request'
         run: ./gradlew lintDebug
 
+
       - name: Upload debug APK
+        if: github.ref == 'refs/heads/dev'
         uses: actions/upload-artifact@v4
         with:
           name: debug-apk
