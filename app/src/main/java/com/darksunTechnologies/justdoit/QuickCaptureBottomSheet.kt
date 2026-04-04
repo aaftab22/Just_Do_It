@@ -136,9 +136,11 @@ class QuickCaptureBottomSheet : BottomSheetDialogFragment() {
         val input = binding.captureInput.text?.toString()?.trim() ?: return
         if (input.isEmpty()) return
 
+        val description = binding.captureDescription.text?.toString()?.trim()
         val isHighPriority = binding.capturePrioritySwitch.isChecked
         val task = Task(
             name = input,
+            description = if (description.isNullOrBlank()) null else description,
             isHighPriority = isHighPriority,
             source = "manual",
             createdAt = System.currentTimeMillis()

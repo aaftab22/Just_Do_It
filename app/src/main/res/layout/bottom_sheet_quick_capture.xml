@@ -56,32 +56,35 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
-        app:hintEnabled="true">
+        app:hintEnabled="true"
+        app:counterEnabled="true"
+        app:counterMaxLength="120">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/captureInput"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="What needs to be done?"
+            android:hint="Task title (max 120 chars)"
             android:inputType="textCapSentences"
             android:maxLines="3"
-            android:imeOptions="actionDone" />
+            android:maxLength="120"
+            android:imeOptions="actionNext" />
     </com.google.android.material.textfield.TextInputLayout>
 
-    <!-- Hidden Description input -->
+    <!-- Description input -->
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/descriptionLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
-        android:visibility="gone"
+        android:visibility="visible"
         app:hintEnabled="true">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/captureDescription"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Add details..."
+            android:hint="Details (optional)"
             android:inputType="textMultiLine|textCapSentences"
             android:minLines="2"
             android:maxLines="5" />
