@@ -29,14 +29,27 @@ class TaskAdapter: ListAdapter<Task, TaskAdapter.TaskViewHolder>(DIFF_CALLBACK) 
         val highPriorityIcon = holder.itemView.findViewById<ImageView>(R.id.highPriority_Icon)
 
         taskTV.text = currTask.name
+        
+        // Apply strikethrough and fade if completed
+        if (currTask.isCompleted) {
+            taskTV.paintFlags = taskTV.paintFlags or android.graphics.Paint.STRIKE_THRU_TEXT_FLAG
+            holder.itemView.alpha = 0.6f
+        } else {
+            taskTV.paintFlags = taskTV.paintFlags and android.graphics.Paint.STRIKE_THRU_TEXT_FLAG.inv()
+            holder.itemView.alpha = 1.0f
+        }
+
         highPriorityIcon.visibility =
             if (currTask.isHighPriority) View.VISIBLE else View.GONE
 
         holder.itemView.setOnClickListener {
             val context = holder.itemView.context
             val intent = Intent(context, TaskDetailActivity::class.java)
+            intent.putExtra("task_id", currTask.id)
             intent.putExtra("task_name", currTask.name)
             intent.putExtra("task_priority", currTask.isHighPriority)
+            intent.putExtra("task_completed", currTask.isCompleted)
+            intent.putExtra("task_description", currTask.description)
             context.startActivity(intent)
         }
     }
