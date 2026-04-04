@@ -24,7 +24,15 @@ class TaskDetailActivity : AppCompatActivity() {
         val name = intent.getStringExtra("task_name")
         val isHighPriority = intent.getBooleanExtra("task_priority", false)
 
+        setSupportActionBar(binding.myToolbar)
+
         binding.etTitle.text = name
+
+        binding.myToolbar.setNavigationOnClickListener {
+            finish()
+        }
+
+        supportActionBar?.title = ""
         
         if (isHighPriority) {
             binding.priorityValue.text = "High"
