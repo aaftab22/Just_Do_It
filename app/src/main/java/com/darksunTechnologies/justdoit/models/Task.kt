@@ -15,5 +15,7 @@ data class Task(
     val createdAt: Long = System.currentTimeMillis(),
     val dueDate: Long? = null,
     @ColumnInfo(defaultValue = "manual")
-    val source: String = "manual" // "manual", "voice", "shake", "vip"
+    val source: String = "manual", // "manual", "voice", "shake", "vip"
+    @ColumnInfo(defaultValue = "0")
+    val isCompleted: Boolean = false
 )

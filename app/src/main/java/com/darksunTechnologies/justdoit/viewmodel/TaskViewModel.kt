@@ -51,6 +51,11 @@ class TaskViewModel(application: Application): AndroidViewModel(application) {
         repository.insertTask(task)
     }
 
+    fun toggleComplete(task: Task) = viewModelScope.launch {
+        val updatedTask = task.copy(isCompleted = !task.isCompleted)
+        repository.updateTask(updatedTask)
+    }
+
     fun deleteTask(task: Task) = viewModelScope.launch {
         repository.deleteTask(task)
         recentlyDeletedTask = task
