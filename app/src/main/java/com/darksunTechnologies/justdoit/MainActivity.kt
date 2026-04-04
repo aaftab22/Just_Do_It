@@ -17,10 +17,6 @@ import com.darksunTechnologies.justdoit.databinding.ActivityMainBinding
 import com.darksunTechnologies.justdoit.viewmodel.TaskViewModel
 import com.google.android.material.snackbar.Snackbar
 
-/**
- * MainActivity featuring a search-first design.
- * The primary interface is a clean search header with integrated options.
- */
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private val taskViewModel: TaskViewModel by viewModels()
@@ -32,9 +28,9 @@ class MainActivity : AppCompatActivity() {
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        ViewCompat.setOnApplyWindowInsetsListener(binding.main) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+        ViewCompat.setOnApplyWindowInsetsListener(binding.appBarLayout) { view, insets ->
+            val statusBar = insets.getInsets(WindowInsetsCompat.Type.statusBars())
+            view.setPadding(0, statusBar.top, 0, 0)
             insets
         }
 

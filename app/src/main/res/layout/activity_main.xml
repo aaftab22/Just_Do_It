@@ -5,16 +5,16 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fitsSystemWindows="true"
+
     android:background="#F5F5F5">
 
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/appBarLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="?attr/colorPrimary"
-        android:paddingTop="24dp"
-        android:elevation="0dp">
+        android:background="@android:color/transparent"
+        android:elevation="0dp"
+        app:elevation="0dp">
 
         <!-- Search-First Design: Search bar as the primary header -->
         <com.google.android.material.card.MaterialCardView
@@ -24,8 +24,7 @@
             android:layout_marginBottom="12dp"
             app:cardCornerRadius="28dp"
             app:cardElevation="4dp"
-            app:strokeWidth="0dp"
-            app:layout_scrollFlags="scroll|enterAlways">
+            app:strokeWidth="0dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
