@@ -42,7 +42,7 @@ class TaskListFragment : Fragment() {
         recyclerView.adapter = myAdapter
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
 
-        attachSwipeToDelete(recyclerView)
+        attachSwipeActions(recyclerView)
 
         viewModel.tasks.observe(viewLifecycleOwner) { list ->
             myAdapter.submitList(list)
@@ -51,9 +51,9 @@ class TaskListFragment : Fragment() {
         }
     }
 
-    private fun attachSwipeToDelete(recyclerView: RecyclerView) {
+    private fun attachSwipeActions(recyclerView: RecyclerView) {
         val swipeCallback = object :
-            ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
+            ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT) {
 
             override fun onMove(
                 recyclerView: RecyclerView,
@@ -65,13 +65,21 @@ class TaskListFragment : Fragment() {
                 val position = viewHolder.bindingAdapterPosition
                 val task = myAdapter.currentList[position]
 
-                viewModel.deleteTask(task)
-
-                Snackbar.make(requireView(), "Task Deleted", Snackbar.LENGTH_LONG)
-                    .setAction("UNDO") {
-                        viewModel.undoDelete()
+                when (direction) {
+                    ItemTouchHelper.LEFT -> {
+                        // DELETE
+                        viewModel.deleteTask(task)
+                        Snackbar.make(requireView(), "Task deleted", Snackbar.LENGTH_LONG)
+                            .setAction("UNDO") { viewModel.undoDelete() }
+                            .show()
                     }
-                    .show()
+                    ItemTouchHelper.RIGHT -> {
+                        // TOGGLE COMPLETE
+                        viewModel.toggleComplete(task)
+                        val msg = if (task.isCompleted) "Task reactivated" else "Task completed ✓"
+                        Snackbar.make(requireView(), msg, Snackbar.LENGTH_SHORT).show()
+                    }
+                }
             }
 
             override fun onChildDraw(
@@ -86,9 +94,16 @@ class TaskListFragment : Fragment() {
                 RecyclerViewSwipeDecorator.Builder(
                     c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive
                 )
-                    .addSwipeLeftBackgroundColor(Color.RED)
+                    // Swipe LEFT → Red delete
+                    .addSwipeLeftBackgroundColor(Color.parseColor("#EF4444"))
                     .addSwipeLeftActionIcon(R.drawable.delete)
                     .setSwipeLeftActionIconTint(Color.WHITE)
+                    .addSwipeLeftCornerRadius(1, 12f)
+                    // Swipe RIGHT → Green complete
+                    .addSwipeRightBackgroundColor(Color.parseColor("#22C55E"))
+                    .addSwipeRightActionIcon(R.drawable.ic_check)
+                    .setSwipeRightActionIconTint(Color.WHITE)
+                    .addSwipeRightCornerRadius(1, 12f)
                     .create()
                     .decorate()
 
