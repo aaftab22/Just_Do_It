@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.ItemTouchHelper
@@ -24,6 +25,30 @@ class TaskListFragment : Fragment() {
     private val viewModel: TaskViewModel by activityViewModels()
     private lateinit var myAdapter: TaskAdapter
 
+    // ActivityResultLauncher: detects when we come back from TaskDetailActivity
+    private val taskDetailLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == TaskDetailActivity.RESULT_TASK_DELETED) {
+            val data = result.data
+            val id = data?.getIntExtra("deleted_task_id", -1) ?: -1
+            val name = data?.getStringExtra("deleted_task_name") ?: ""
+            val isHighPriority = data?.getBooleanExtra("deleted_task_priority", false) ?: false
+
+            if (id != -1) {
+                val task = com.darksunTechnologies.justdoit.models.Task(
+                    id = id, name = name, isHighPriority = isHighPriority
+                )
+                // Delete in THIS ViewModel so undoDelete() has access to recentlyDeletedTask
+                viewModel.deleteTask(task)
+
+                Snackbar.make(requireView(), "Task deleted", Snackbar.LENGTH_LONG)
+                    .setAction("UNDO") { viewModel.undoDelete() }
+                    .show()
+            }
+        }
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -38,7 +63,18 @@ class TaskListFragment : Fragment() {
         val recyclerView = view.findViewById<RecyclerView>(R.id.tasksRV)
         val emptyState = view.findViewById<View>(R.id.emptyState)
 
-        myAdapter = TaskAdapter()
+        // Pass click callback — fragment controls the launch
+        myAdapter = TaskAdapter { task ->
+            val intent = Intent(requireContext(), TaskDetailActivity::class.java).apply {
+                putExtra("task_id", task.id)
+                putExtra("task_name", task.name)
+                putExtra("task_priority", task.isHighPriority)
+                putExtra("task_completed", task.isCompleted)
+                putExtra("task_description", task.description)
+            }
+            taskDetailLauncher.launch(intent)
+        }
+
         recyclerView.adapter = myAdapter
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
 
@@ -67,14 +103,12 @@ class TaskListFragment : Fragment() {
 
                 when (direction) {
                     ItemTouchHelper.LEFT -> {
-                        // DELETE
                         viewModel.deleteTask(task)
                         Snackbar.make(requireView(), "Task deleted", Snackbar.LENGTH_LONG)
                             .setAction("UNDO") { viewModel.undoDelete() }
                             .show()
                     }
                     ItemTouchHelper.RIGHT -> {
-                        // TOGGLE COMPLETE
                         viewModel.toggleComplete(task)
                         val msg = if (task.isCompleted) "Task reactivated" else "Task completed ✓"
                         Snackbar.make(requireView(), msg, Snackbar.LENGTH_SHORT).show()
@@ -94,12 +128,10 @@ class TaskListFragment : Fragment() {
                 RecyclerViewSwipeDecorator.Builder(
                     c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive
                 )
-                    // Swipe LEFT → Red delete
                     .addSwipeLeftBackgroundColor(Color.parseColor("#EF4444"))
                     .addSwipeLeftActionIcon(R.drawable.delete)
                     .setSwipeLeftActionIconTint(Color.WHITE)
                     .addSwipeLeftCornerRadius(1, 12f)
-                    // Swipe RIGHT → Green complete
                     .addSwipeRightBackgroundColor(Color.parseColor("#22C55E"))
                     .addSwipeRightActionIcon(R.drawable.ic_check)
                     .setSwipeRightActionIconTint(Color.WHITE)

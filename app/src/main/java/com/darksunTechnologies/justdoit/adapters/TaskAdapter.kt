@@ -13,7 +13,9 @@ import com.darksunTechnologies.justdoit.TaskDetailActivity
 import com.darksunTechnologies.justdoit.R
 import com.darksunTechnologies.justdoit.models.Task
 
-class TaskAdapter: ListAdapter<Task, TaskAdapter.TaskViewHolder>(DIFF_CALLBACK) {
+class TaskAdapter(
+    private val onTaskClick: (Task) -> Unit
+) : ListAdapter<Task, TaskAdapter.TaskViewHolder>(DIFF_CALLBACK) {
     class TaskViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TaskViewHolder {
@@ -43,14 +45,7 @@ class TaskAdapter: ListAdapter<Task, TaskAdapter.TaskViewHolder>(DIFF_CALLBACK) 
             if (currTask.isHighPriority) View.VISIBLE else View.GONE
 
         holder.itemView.setOnClickListener {
-            val context = holder.itemView.context
-            val intent = Intent(context, TaskDetailActivity::class.java)
-            intent.putExtra("task_id", currTask.id)
-            intent.putExtra("task_name", currTask.name)
-            intent.putExtra("task_priority", currTask.isHighPriority)
-            intent.putExtra("task_completed", currTask.isCompleted)
-            intent.putExtra("task_description", currTask.description)
-            context.startActivity(intent)
+            onTaskClick(currTask)
         }
     }
 

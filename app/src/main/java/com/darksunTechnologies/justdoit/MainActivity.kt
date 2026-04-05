@@ -52,6 +52,40 @@ class MainActivity : AppCompatActivity() {
             sheet.show(supportFragmentManager, QuickCaptureBottomSheet.TAG)
         }
 
+        // Observer: show "Task saved! EDIT" Snackbar after Quick Capture
+        taskViewModel.lastSavedTaskId.observe(this) { taskId ->
+            if (taskId == null) return@observe
+
+            Snackbar.make(binding.root, "Task saved!", Snackbar.LENGTH_LONG)
+                .setAction("EDIT") {
+                    val task = taskViewModel.tasks.value?.find { it.id == taskId.toInt() }
+                    if (task != null) {
+                        val intent = Intent(this, TaskDetailActivity::class.java).apply {
+                            putExtra("task_id", task.id)
+                            putExtra("task_name", task.name)
+                            putExtra("task_priority", task.isHighPriority)
+                            putExtra("task_completed", task.isCompleted)
+                            putExtra("task_description", task.description)
+                        }
+                        startActivity(intent)
+                    }
+                }
+                .show()
+
+            taskViewModel.clearLastSavedTaskId() // consume the event
+        }
+
+        // Observer: show UNDO Snackbar when task is deleted from anywhere (including Detail screen)
+        taskViewModel.showUndoDelete.observe(this) { triggered ->
+            if (triggered != true) return@observe
+
+            Snackbar.make(binding.root, "Task deleted", Snackbar.LENGTH_LONG)
+                .setAction("UNDO") { taskViewModel.undoDelete() }
+                .show()
+
+            taskViewModel.clearUndoDelete() // consume the event
+        }
+
         // Observe backup results
         taskViewModel.backupResult.observe(this) { result ->
             when (result) {

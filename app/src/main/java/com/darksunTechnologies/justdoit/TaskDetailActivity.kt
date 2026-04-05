@@ -39,7 +39,7 @@ class TaskDetailActivity : AppCompatActivity() {
         }
 
         supportActionBar?.title = ""
-        
+
         if (isHighPriority) {
             binding.priorityValue.text = "High"
             binding.priorityCard.setCardBackgroundColor("#FFE4E6".toColorInt())
@@ -69,19 +69,18 @@ class TaskDetailActivity : AppCompatActivity() {
         binding.actionComplete.setOnClickListener {
             val id = intent.getIntExtra("task_id", -1)
             if (id != -1) {
-                val name = intent.getStringExtra("task_name") ?: ""
-                val isHighPriority = intent.getBooleanExtra("task_priority", false)
-                val isCompleted = intent.getBooleanExtra("task_completed", false)
-                
-                // Toggle completion status
+                val taskName = intent.getStringExtra("task_name") ?: ""
+                val taskIsHighPriority = intent.getBooleanExtra("task_priority", false)
+                val taskIsCompleted = intent.getBooleanExtra("task_completed", false)
+
                 taskViewModel.toggleComplete(com.darksunTechnologies.justdoit.models.Task(
-                    id = id, 
-                    name = name, 
-                    isHighPriority = isHighPriority,
-                    isCompleted = isCompleted
+                    id = id,
+                    name = taskName,
+                    isHighPriority = taskIsHighPriority,
+                    isCompleted = taskIsCompleted
                 ))
-                
-                val msg = if (isCompleted) "Task Reactivated" else "Task Completed!"
+
+                val msg = if (taskIsCompleted) "Task Reactivated" else "Task Completed!"
                 android.widget.Toast.makeText(this, msg, android.widget.Toast.LENGTH_SHORT).show()
                 finish()
             }
@@ -94,10 +93,13 @@ class TaskDetailActivity : AppCompatActivity() {
         binding.actionDelete.setOnClickListener {
             val id = intent.getIntExtra("task_id", -1)
             if (id != -1) {
-                val name = intent.getStringExtra("task_name") ?: ""
-                val isHighPriority = intent.getBooleanExtra("task_priority", false)
-                taskViewModel.deleteTask(com.darksunTechnologies.justdoit.models.Task(id = id, name = name, isHighPriority = isHighPriority))
-                android.widget.Toast.makeText(this, "Task Deleted!", android.widget.Toast.LENGTH_SHORT).show()
+                // Don't delete here — pass task back to TaskListFragment which owns the undo logic
+                val resultIntent = android.content.Intent().apply {
+                    putExtra("deleted_task_id", id)
+                    putExtra("deleted_task_name", intent.getStringExtra("task_name") ?: "")
+                    putExtra("deleted_task_priority", intent.getBooleanExtra("task_priority", false))
+                }
+                setResult(RESULT_TASK_DELETED, resultIntent)
                 finish()
             }
         }
@@ -107,18 +109,22 @@ class TaskDetailActivity : AppCompatActivity() {
         val originalName = intent.getStringExtra("task_name") ?: "New Task"
         val isHighPriority = intent.getBooleanExtra("task_priority", false)
         val isCompleted = intent.getBooleanExtra("task_completed", false)
-        
+
         val duplicatedTask = com.darksunTechnologies.justdoit.models.Task(
-            id = 0, 
-            name = "$originalName (Copy)", 
+            id = 0,
+            name = "$originalName (Copy)",
             isHighPriority = isHighPriority,
             isCompleted = isCompleted,
             createdAt = System.currentTimeMillis()
         )
-        
+
         taskViewModel.addTask(duplicatedTask)
-        
+
         android.widget.Toast.makeText(this, "Task Duplicated!", android.widget.Toast.LENGTH_SHORT).show()
         finish()
+    }
+
+    companion object {
+        const val RESULT_TASK_DELETED = 100
     }
 }

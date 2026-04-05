@@ -47,8 +47,25 @@ class TaskViewModel(application: Application): AndroidViewModel(application) {
     private val _backupResult = MutableLiveData<BackupResult>()
     val backupResult: LiveData<BackupResult> = _backupResult
 
+    // One-shot event: fires when a new task is saved, carries the new row ID
+    private val _lastSavedTaskId = MutableLiveData<Long?>()
+    val lastSavedTaskId: LiveData<Long?> = _lastSavedTaskId
+
+    fun clearLastSavedTaskId() {
+        _lastSavedTaskId.value = null
+    }
+
+    // One-shot event: fires when a task is deleted (from anywhere), so MainActivity shows UNDO
+    private val _showUndoDelete = MutableLiveData<Boolean?>()
+    val showUndoDelete: LiveData<Boolean?> = _showUndoDelete
+
+    fun clearUndoDelete() {
+        _showUndoDelete.value = null
+    }
+
     fun addTask(task: Task) = viewModelScope.launch {
-        repository.insertTask(task)
+        val newId = repository.insertTask(task)
+        _lastSavedTaskId.postValue(newId)
     }
 
     fun toggleComplete(task: Task) = viewModelScope.launch {
@@ -59,6 +76,7 @@ class TaskViewModel(application: Application): AndroidViewModel(application) {
     fun deleteTask(task: Task) = viewModelScope.launch {
         repository.deleteTask(task)
         recentlyDeletedTask = task
+        _showUndoDelete.postValue(true)
     }
 
     fun undoDelete() {
