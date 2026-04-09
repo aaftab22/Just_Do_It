@@ -25,7 +25,7 @@
             android:textSize="20sp"
             android:textStyle="bold" />
 
-        <!-- Placeholder for right icons since we are in a Toolbar -->
+        <!-- Edit/Save button -->
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
@@ -34,10 +34,12 @@
             android:paddingEnd="12dp">
 
             <ImageView
+                android:id="@+id/btnEdit"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
                 android:padding="12dp"
                 android:src="@drawable/ic_edit"
+                android:contentDescription="Edit task"
                 app:tint="@color/primary" />
 
         </LinearLayout>
@@ -61,154 +63,291 @@
             android:layout_height="wrap_content"
             android:padding="20dp">
 
-            <!-- Task Title -->
-            <TextView
+            <!-- Task Title (EditText, starts non-focusable) -->
+            <EditText
                 android:id="@+id/etTitle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:text="Buy groceries for dinner"
+                android:background="@android:color/transparent"
                 android:textColor="@color/text_main"
                 android:textSize="24sp"
                 android:textStyle="bold"
+                android:focusable="false"
+                android:focusableInTouchMode="false"
+                android:cursorVisible="false"
+                android:maxLength="120"
+                android:inputType="textCapSentences"
                 app:layout_constraintTop_toTopOf="parent" />
 
+            <!-- Priority + Status Row -->
             <LinearLayout
                 android:id="@+id/statusPriorityContainer"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
                 android:orientation="horizontal"
+                android:gravity="center_vertical"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/etTitle">
 
-                <LinearLayout
+                <!-- Priority: label + chip -->
+                <TextView
+                    android:id="@+id/labelPriority"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical">
+                    android:text="PRIORITY"
+                    android:textColor="@color/text_sec"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
 
-                    <TextView
-                        android:id="@+id/labelPriority"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="16dp"
-                        android:text="PRIORITY"
-                        android:textColor="@color/text_sec"
-                        android:textSize="12sp"
-                        android:textStyle="bold" />
-
-                    <com.google.android.material.card.MaterialCardView
-                        android:id="@+id/priorityCard"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        app:cardBackgroundColor="@color/red_soft"
-                        app:cardCornerRadius="16dp"
-                        app:cardElevation="0dp">
-
-                        <TextView
-                            android:id="@+id/priorityValue"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:paddingHorizontal="16dp"
-                            android:paddingVertical="8dp"
-                            android:text=" High"
-                            android:textColor="@color/red_dark"
-                            android:textStyle="bold" />
-                    </com.google.android.material.card.MaterialCardView>
-                </LinearLayout>
-
-                <LinearLayout
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/priorityCard"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="24dp"
-                    android:orientation="vertical">
+                    android:layout_marginStart="8dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    app:cardBackgroundColor="@color/red_soft"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="0dp"
+                    app:rippleColor="#40000000">
 
                     <TextView
-                        android:id="@+id/labelStatus"
+                        android:id="@+id/priorityValue"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="16dp"
-                        android:text="STATUS"
-                        android:textColor="@color/text_sec"
-                        android:textSize="12sp"
+                        android:paddingHorizontal="14dp"
+                        android:paddingVertical="6dp"
+                        android:text="High"
+                        android:textColor="@color/red_dark"
+                        android:textSize="13sp"
                         android:textStyle="bold" />
+                </com.google.android.material.card.MaterialCardView>
 
-                    <com.google.android.material.card.MaterialCardView
-                        android:id="@+id/statusCard"
+                <!-- Spacer -->
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_weight="1" />
+
+                <!-- Status: label + chip -->
+                <TextView
+                    android:id="@+id/labelStatus"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="STATUS"
+                    android:textColor="@color/text_sec"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/statusCard"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    app:cardBackgroundColor="@color/white"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="0dp"
+                    app:strokeColor="@color/grey_medium"
+                    app:strokeWidth="1dp"
+                    app:rippleColor="#40000000">
+
+                    <TextView
+                        android:id="@+id/statusValue"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        app:cardBackgroundColor="@color/white"
-                        app:cardCornerRadius="16dp"
-                        app:cardElevation="0dp"
-                        app:strokeColor="@color/grey_medium"
-                        app:strokeWidth="1dp">
+                        android:paddingHorizontal="14dp"
+                        android:paddingVertical="6dp"
+                        android:text="To Do"
+                        android:textColor="@color/text_main"
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
+                </com.google.android.material.card.MaterialCardView>
 
-                        <TextView
-                            android:id="@+id/statusValue"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:paddingHorizontal="16dp"
-                            android:paddingVertical="8dp"
-                            android:text=" To Do"
-                            android:textColor="@color/text_main"
-                            android:textStyle="bold" />
-                    </com.google.android.material.card.MaterialCardView>
-                </LinearLayout>
             </LinearLayout>
 
             <View
                 android:id="@+id/divider1"
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
-                android:layout_marginTop="24dp"
+                android:layout_marginTop="20dp"
                 android:background="#EEEEEE"
                 app:layout_constraintTop_toBottomOf="@id/statusPriorityContainer" />
 
-            <!-- Due Date Section -->
-            <ImageView
-                android:id="@+id/iconCalendar"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_marginTop="24dp"
-                android:padding="8dp"
-                android:background="@drawable/circle_background"
-                android:backgroundTint="@color/grey_light"
-                android:src="@drawable/ic_clock"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/divider1" />
-
-            <TextView
-                android:id="@+id/labelDueDate"
-                android:layout_width="wrap_content"
+            <!-- Date + Time Row -->
+            <LinearLayout
+                android:id="@+id/dateTimeContainer"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="12dp"
-                android:text="DUE DATE"
-                android:textColor="@color/text_sec"
-                android:textSize="12sp"
-                android:textStyle="bold"
-                app:layout_constraintStart_toEndOf="@id/iconCalendar"
-                app:layout_constraintTop_toTopOf="@id/iconCalendar" />
+                android:layout_marginTop="20dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                app:layout_constraintTop_toBottomOf="@id/divider1">
 
-            <TextView
-                android:id="@+id/tvDueDate"
-                android:layout_width="wrap_content"
+                <!-- Date: label + value -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <ImageView
+                        android:id="@+id/iconCalendar"
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:padding="6dp"
+                        android:background="@drawable/circle_background"
+                        android:backgroundTint="@color/grey_light"
+                        android:src="@drawable/ic_clock"
+                        android:contentDescription="Due date" />
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/labelDueDate"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="DUE DATE"
+                            android:textColor="@color/text_sec"
+                            android:textSize="10sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/tvDueDate"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Tap to set"
+                            android:textColor="@color/text_main"
+                            android:textSize="14sp"
+                            android:textStyle="bold"
+                            android:background="?attr/selectableItemBackground"
+                            android:clickable="true"
+                            android:focusable="true" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <!-- Time: label + value -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <ImageView
+                        android:id="@+id/iconTime"
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:padding="6dp"
+                        android:background="@drawable/circle_background"
+                        android:backgroundTint="@color/grey_light"
+                        android:src="@drawable/ic_clock"
+                        android:contentDescription="Due time" />
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/labelDueTime"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="DUE TIME"
+                            android:textColor="@color/text_sec"
+                            android:textSize="10sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/tvDueTime"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Tap to set"
+                            android:textColor="@color/text_main"
+                            android:textSize="14sp"
+                            android:textStyle="bold"
+                            android:background="?attr/selectableItemBackground"
+                            android:clickable="true"
+                            android:focusable="true" />
+                    </LinearLayout>
+                </LinearLayout>
+
+            </LinearLayout>
+            <!-- Reminder Toggle -->
+            <View
+                android:id="@+id/dividerReminder"
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="#EEEEEE"
+                android:layout_marginTop="20dp"
+                app:layout_constraintTop_toBottomOf="@id/dateTimeContainer" />
+
+            <LinearLayout
+                android:id="@+id/reminderRow"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Feb 24, 2026"
-                android:textColor="@color/text_main"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                app:layout_constraintStart_toStartOf="@id/labelDueDate"
-                app:layout_constraintTop_toBottomOf="@id/labelDueDate" />
+                android:layout_marginTop="16dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                app:layout_constraintTop_toBottomOf="@id/dividerReminder">
+
+                <ImageView
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:padding="8dp"
+                    android:background="@drawable/circle_background"
+                    android:backgroundTint="@color/grey_light"
+                    android:src="@drawable/ic_bell"
+                    android:contentDescription="Reminder" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="12dp"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="REMINDER"
+                        android:textColor="@color/text_sec"
+                        android:textSize="12sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tvReminderStatus"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Off"
+                        android:textColor="@color/text_main"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <com.google.android.material.switchmaterial.SwitchMaterial
+                    android:id="@+id/switchReminder"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+            </LinearLayout>
 
             <View
                 android:id="@+id/divider2"
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
-                android:layout_marginTop="24dp"
+                android:layout_marginTop="20dp"
                 android:background="#EEEEEE"
-                app:layout_constraintTop_toBottomOf="@id/iconCalendar" />
+                app:layout_constraintTop_toBottomOf="@id/reminderRow" />
 
             <!-- Description -->
             <TextView
@@ -223,15 +362,20 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/divider2" />
 
-            <TextView
+            <EditText
                 android:id="@+id/etDescription"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
                 android:lineSpacingExtra="4dp"
-                android:text="Pick up fresh ingredients for tonight's meal. Need pasta, organic tomatoes, basil, and some parmesan cheese."
+                android:background="@android:color/transparent"
                 android:textColor="@color/text_main"
                 android:textSize="16sp"
+                android:focusable="false"
+                android:focusableInTouchMode="false"
+                android:cursorVisible="false"
+                android:inputType="textMultiLine|textCapSentences"
+                android:hint="Add a description..."
                 app:layout_constraintTop_toBottomOf="@id/labelDescription" />
 
             <!-- Smart Triggers Card -->

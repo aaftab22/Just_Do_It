@@ -1,6 +1,12 @@
 package com.darksunTechnologies.justdoit
 
+import android.Manifest
+import android.app.AlarmManager
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.view.View
 import androidx.activity.addCallback
@@ -9,7 +15,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.PopupMenu
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.widget.addTextChangedListener
@@ -52,6 +57,26 @@ class MainActivity : AppCompatActivity() {
             sheet.show(supportFragmentManager, QuickCaptureBottomSheet.TAG)
         }
 
+        if (Build.VERSION.SDK_INT >= 33) {
+            notificationPermissionsLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val alarmManager = getSystemService(AlarmManager::class.java)
+            if (!alarmManager.canScheduleExactAlarms()) {
+                AlertDialog.Builder(this)
+                    .setTitle("Allow Alarms & Reminders")
+                    .setMessage("Required to send task reminders on time.")
+                    .setPositiveButton("Open Settings") { _, _ ->
+                        startActivity(Intent(android.provider.Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM))
+                    }
+                    .setNegativeButton("Skip", null)
+                    .show()
+            }
+        }
+
+        createNotificationChannel(this)
+
         // Observer: show "Task saved! EDIT" Snackbar after Quick Capture
         taskViewModel.lastSavedTaskId.observe(this) { taskId ->
             if (taskId == null) return@observe
@@ -65,7 +90,11 @@ class MainActivity : AppCompatActivity() {
                             putExtra("task_name", task.name)
                             putExtra("task_priority", task.isHighPriority)
                             putExtra("task_completed", task.isCompleted)
-                            putExtra("task_description", task.description)
+                            putExtra("task_due_date", task.dueDate ?: -1L)
+                            putExtra("task_has_reminder", task.hasReminder)
+                            putExtra("task_created_at", task.createdAt)
+                            putExtra("task_source", task.source)
+                            putExtra("start_in_edit_mode", true)
                         }
                         startActivity(intent)
                     }
@@ -155,8 +184,7 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
 
-    private val createBackupFileLauncher =
-        registerForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri ->
+    private val createBackupFileLauncher = registerForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri ->
             if (uri != null) {
                 taskViewModel.backupToUri(this, uri)
             }
@@ -166,6 +194,41 @@ class MainActivity : AppCompatActivity() {
         registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
             if (uri != null) {
                 taskViewModel.restoreFromUri(this, uri)
+            }
+        }
+
+    fun createNotificationChannel(context: Context) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                "task_reminders",
+                "Task Reminders",
+                NotificationManager.IMPORTANCE_HIGH
+            ).apply {
+                description = "Channels for task scheduled reminders"
+                enableLights(true)
+                enableVibration(true)
+            }
+            val manager = context.getSystemService(NotificationManager::class.java)
+            manager.createNotificationChannel(channel)
+        }
+    }
+
+    private val notificationPermissionsLauncher =
+        registerForActivityResult(
+            ActivityResultContracts.RequestPermission()
+        ) { isGranted ->
+            if (!isGranted)
+            {
+                AlertDialog.Builder(this)
+                    .setTitle("Enable Notification")
+                    .setMessage("Allow notifications to get task reminders on time.")
+                    .setPositiveButton("Open Settings") { _, _ ->
+                        startActivity(Intent(android.provider.Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
+                            putExtra(android.provider.Settings.EXTRA_APP_PACKAGE, packageName)
+                        })
+                    }
+                    .setNegativeButton("Skip Anyway", null)
+                    .show()
             }
         }
 }

@@ -70,7 +70,10 @@ class TaskListFragment : Fragment() {
                 putExtra("task_name", task.name)
                 putExtra("task_priority", task.isHighPriority)
                 putExtra("task_completed", task.isCompleted)
-                putExtra("task_description", task.description)
+                putExtra("task_due_date", task.dueDate ?: -1L)
+                putExtra("task_has_reminder", task.hasReminder)
+                putExtra("task_created_at", task.createdAt)
+                putExtra("task_source", task.source)
             }
             taskDetailLauncher.launch(intent)
         }

@@ -44,6 +44,32 @@ class TaskAdapter(
         highPriorityIcon.visibility =
             if (currTask.isHighPriority) View.VISIBLE else View.GONE
 
+        // Due date display + overdue highlighting
+        val llDueDate = holder.itemView.findViewById<android.widget.LinearLayout>(R.id.llTaskDueDate)
+        val dueDateTV = holder.itemView.findViewById<TextView>(R.id.tvTaskDueDate)
+        val dueDateIcon = holder.itemView.findViewById<ImageView>(R.id.ivTaskDueDateIcon)
+
+        if (currTask.dueDate != null) {
+            val formatted = java.text.SimpleDateFormat("MMM d", java.util.Locale.getDefault())
+                .format(java.util.Date(currTask.dueDate))
+            dueDateTV.text = "Due $formatted"
+            llDueDate.visibility = View.VISIBLE
+
+            val isOverdue = currTask.dueDate < System.currentTimeMillis() && !currTask.isCompleted
+            val context = holder.itemView.context
+            if (isOverdue) {
+                dueDateTV.setTextColor(context.getColor(R.color.overdue_red))
+                dueDateIcon.setColorFilter(context.getColor(R.color.overdue_red))
+                llDueDate.backgroundTintList = android.content.res.ColorStateList.valueOf(context.getColor(R.color.overdue_red_soft))
+            } else {
+                dueDateTV.setTextColor(context.getColor(R.color.text_sec))
+                dueDateIcon.setColorFilter(context.getColor(R.color.text_sec))
+                llDueDate.backgroundTintList = android.content.res.ColorStateList.valueOf(context.getColor(R.color.grey_light))
+            }
+        } else {
+            llDueDate.visibility = View.GONE
+        }
+
         holder.itemView.setOnClickListener {
             onTaskClick(currTask)
         }
