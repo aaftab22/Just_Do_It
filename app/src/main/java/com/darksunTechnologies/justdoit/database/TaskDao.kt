@@ -15,6 +15,9 @@ interface TaskDao {
     @Query("SELECT * FROM tasks ORDER BY isCompleted ASC, id DESC")
     fun getAllTasks(): Flow<List<Task>>
 
+    @Query("SELECT * FROM tasks WHERE hasReminder=1 AND dueDate > :currentTime")
+    fun getActiveReminders(currentTime: Long): List<Task>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertTask(task: Task): Long
 

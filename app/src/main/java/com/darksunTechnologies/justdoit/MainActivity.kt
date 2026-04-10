@@ -8,7 +8,6 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
-import android.view.View
 import androidx.activity.addCallback
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
@@ -42,8 +41,8 @@ class MainActivity : AppCompatActivity() {
         taskViewModel.migrateFromSharedPrefsIfNeeded(this)
 
         // Integrated options menu inside the search bar
-        binding.btnMenu.setOnClickListener { view ->
-            showOptionsMenu(view)
+        binding.btnMenu.setOnClickListener {
+            showOptionsMenu()
         }
 
         // Back button sends to background instead of closing
@@ -52,10 +51,11 @@ class MainActivity : AppCompatActivity() {
         }
 
         // FAB opens Quick Capture bottom sheet
-        binding.fabCapture.setOnClickListener {
-            val sheet = QuickCaptureBottomSheet()
-            sheet.show(supportFragmentManager, QuickCaptureBottomSheet.TAG)
-        }
+        binding.fabCapture
+            .setOnClickListener {
+                val sheet = QuickCaptureBottomSheet()
+                sheet.show(supportFragmentManager, QuickCaptureBottomSheet.TAG)
+            }
 
         if (Build.VERSION.SDK_INT >= 33) {
             notificationPermissionsLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
@@ -142,7 +142,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun showOptionsMenu(view: View) {
+    private fun showOptionsMenu() {
         val sheet = SettingsBottomSheet { action ->
             when (action) {
                 SettingsBottomSheet.Action.DELETE_ALL -> deleteAll()
@@ -198,7 +198,6 @@ class MainActivity : AppCompatActivity() {
         }
 
     fun createNotificationChannel(context: Context) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 "task_reminders",
                 "Task Reminders",
@@ -210,7 +209,6 @@ class MainActivity : AppCompatActivity() {
             }
             val manager = context.getSystemService(NotificationManager::class.java)
             manager.createNotificationChannel(channel)
-        }
     }
 
     private val notificationPermissionsLauncher =
