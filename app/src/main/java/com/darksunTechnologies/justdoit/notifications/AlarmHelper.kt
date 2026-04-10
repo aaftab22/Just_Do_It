@@ -8,9 +8,35 @@ import android.os.Build
 import com.darksunTechnologies.justdoit.models.Task
 
 class AlarmHelper {
-    fun scheduleReminder(context: Context, task: Task) {
 
-        android.util.Log.d("AlarmHelper", "Alarm scheduled for task: ${task.name} at ${task.dueDate}")
+    /**
+     * Cancels any existing alarm for the given task.
+     * Must be called before scheduling a new alarm (cancel-before-schedule pattern)
+     * and when the user turns off the reminder toggle.
+     */
+    fun cancelReminder(context: Context, taskId: Int) {
+        val intent = Intent(context, ReminderReceiver::class.java)
+        val pendingIntent = PendingIntent.getBroadcast(
+            context,
+            taskId,
+            intent,
+            PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        if (pendingIntent != null) {
+            val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+            alarmManager.cancel(pendingIntent)
+            pendingIntent.cancel()
+            android.util.Log.d("AlarmHelper", "Cancelled existing alarm for task $taskId")
+        }
+    }
+
+    /**
+     * Schedules an exact alarm for the task's due date.
+     * Always call cancelReminder() before this to avoid ghost alarms.
+     */
+    fun scheduleReminder(context: Context, task: Task) {
+        android.util.Log.d("AlarmHelper", "Scheduling alarm for task: ${task.name} at ${task.dueDate}")
         if (!task.hasReminder || task.dueDate == null) return
 
         val intent = Intent(context, ReminderReceiver::class.java).apply {
@@ -19,7 +45,7 @@ class AlarmHelper {
 
         val pendingIntent = PendingIntent.getBroadcast(
             context,
-            task.id, // unique per task
+            task.id,
             intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
