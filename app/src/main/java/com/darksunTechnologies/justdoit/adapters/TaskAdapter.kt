@@ -14,8 +14,11 @@ import com.darksunTechnologies.justdoit.R
 import com.darksunTechnologies.justdoit.models.Task
 
 class TaskAdapter(
-    private val onTaskClick: (Task) -> Unit
+    private val onTaskClick: (Task) -> Unit,
+    private val onTaskDelete: (Task) -> Unit,
+    private val onTaskToggle: (Task) -> Unit
 ) : ListAdapter<Task, TaskAdapter.TaskViewHolder>(DIFF_CALLBACK) {
+
     class TaskViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TaskViewHolder {
@@ -35,9 +38,11 @@ class TaskAdapter(
         // Apply strikethrough and fade if completed
         if (currTask.isCompleted) {
             taskTV.paintFlags = taskTV.paintFlags or android.graphics.Paint.STRIKE_THRU_TEXT_FLAG
+            taskTV.setTextColor(holder.itemView.context.getColor(R.color.text_sec))
             holder.itemView.alpha = 0.6f
         } else {
             taskTV.paintFlags = taskTV.paintFlags and android.graphics.Paint.STRIKE_THRU_TEXT_FLAG.inv()
+            taskTV.setTextColor(holder.itemView.context.getColor(R.color.text_main))
             holder.itemView.alpha = 1.0f
         }
 
@@ -59,6 +64,7 @@ class TaskAdapter(
             val context = holder.itemView.context
             if (isOverdue) {
                 dueDateTV.setTextColor(context.getColor(R.color.overdue_red))
+                taskTV.setTextColor(context.getColor(R.color.overdue_red))
                 dueDateIcon.setColorFilter(context.getColor(R.color.overdue_red))
                 llDueDate.backgroundTintList = android.content.res.ColorStateList.valueOf(context.getColor(R.color.overdue_red_soft))
             } else {
@@ -72,6 +78,46 @@ class TaskAdapter(
 
         holder.itemView.setOnClickListener {
             onTaskClick(currTask)
+        }
+    }
+
+    fun getSwipeCallback(): androidx.recyclerview.widget.ItemTouchHelper.SimpleCallback {
+        return object : androidx.recyclerview.widget.ItemTouchHelper.SimpleCallback(
+            0, androidx.recyclerview.widget.ItemTouchHelper.LEFT or androidx.recyclerview.widget.ItemTouchHelper.RIGHT
+        ) {
+            override fun onMove(rv: RecyclerView, vh: RecyclerView.ViewHolder, t: RecyclerView.ViewHolder) = false
+
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                val position = viewHolder.bindingAdapterPosition
+                if (position != RecyclerView.NO_POSITION && position < currentList.size) {
+                    val task = getItem(position)
+                    if (direction == androidx.recyclerview.widget.ItemTouchHelper.LEFT) {
+                        onTaskDelete(task)
+                    } else {
+                        onTaskToggle(task)
+                    }
+                }
+            }
+
+            override fun onChildDraw(
+                c: android.graphics.Canvas, rv: RecyclerView, vh: RecyclerView.ViewHolder,
+                dX: Float, dY: Float, actionState: Int, active: Boolean
+            ) {
+                it.xabaras.android.recyclerview.swipedecorator.RecyclerViewSwipeDecorator.Builder(
+                    c, rv, vh, dX, dY, actionState, active
+                )
+                    .addSwipeLeftBackgroundColor(android.graphics.Color.parseColor("#EF4444"))
+                    .addSwipeLeftActionIcon(R.drawable.delete)
+                    .setSwipeLeftActionIconTint(android.graphics.Color.WHITE)
+                    .addSwipeLeftCornerRadius(1, 12f)
+                    .addSwipeRightBackgroundColor(android.graphics.Color.parseColor("#22C55E"))
+                    .addSwipeRightActionIcon(R.drawable.ic_check)
+                    .setSwipeRightActionIconTint(android.graphics.Color.WHITE)
+                    .addSwipeRightCornerRadius(1, 12f)
+                    .create()
+                    .decorate()
+                super.onChildDraw(c, rv, vh, dX, dY, actionState, active)
+            }
         }
     }
 
