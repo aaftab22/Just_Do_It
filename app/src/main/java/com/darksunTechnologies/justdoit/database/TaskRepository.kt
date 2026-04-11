@@ -7,7 +7,9 @@ class TaskRepository (private val dao: TaskDao) {
 
     fun getAllTasks(): Flow<List<Task>> = dao.getAllTasks()
 
-    suspend fun insertTask(task: Task) = dao.insertTask(task)
+    suspend fun insertTask(task: Task): Long = dao.insertTask(task)
+
+    suspend fun updateTask(task: Task) = dao.updateTask(task)
 
     suspend fun deleteTask(task: Task) = dao.deleteTask(task)
 
@@ -18,4 +20,6 @@ class TaskRepository (private val dao: TaskDao) {
     suspend fun countTasks(): Int = dao.countTasks()
 
     suspend fun getTaskKeys() = dao.getTaskKeys()
+
+    suspend fun searchTasks(query: String) = dao.searchTasks(query)
 }

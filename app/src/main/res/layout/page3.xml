@@ -2,30 +2,32 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
-    android:gravity="center_horizontal">
+    android:gravity="center"
+    android:padding="32dp">
 
-
-
-    <com.airbnb.lottie.LottieAnimationView
-        android:layout_width="220dp"
-        android:layout_height="320dp"
-        android:layout_marginTop="20dp"
-        app:lottie_autoPlay="true"
-        app:lottie_loop="true"
-        app:lottie_rawRes="@raw/scanner"/>
+    <ImageView
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        android:src="@android:drawable/ic_secure"
+        android:contentDescription="Privacy Icon"
+        android:layout_marginBottom="24dp" />
 
     <TextView
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:text="100% Offline &amp; Private"
         android:textSize="24sp"
-        android:textColor="#3F51B5"
         android:textStyle="bold"
-        android:layout_marginTop="10dp"
-        android:layout_marginLeft="20dp"
-        android:layout_marginRight="20dp"
-        android:text="@string/quickAndHelpful"/>
+        android:gravity="center"
+        android:layout_marginBottom="16dp" />
 
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Zero cloud sync. All your thoughts, tasks, and data stay strictly on your device."
+        android:textSize="16sp"
+        android:gravity="center"
+        android:textColor="@android:color/darker_gray" />
 
 </LinearLayout>

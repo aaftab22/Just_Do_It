@@ -16,6 +16,7 @@ import kotlinx.coroutines.launch
 import androidx.core.content.edit
 import com.darksunTechnologies.justdoit.models.TaskKey
 import com.google.gson.reflect.TypeToken
+import androidx.lifecycle.switchMap
 
 class TaskViewModel(application: Application): AndroidViewModel(application) {
 
@@ -28,18 +29,58 @@ class TaskViewModel(application: Application): AndroidViewModel(application) {
     private val repository = TaskRepository(dao)
     private var recentlyDeletedTask: Task? = null
     private var recentlyDeletedTasks: List<Task>? = null
-    val tasks: LiveData<List<Task>> = repository.getAllTasks().asLiveData()
+    private val _searchQuery = MutableLiveData<String>("")
+    val tasks: LiveData<List<Task>> = _searchQuery.switchMap { query ->
+        if (query.isNullOrBlank()) {
+            repository.getAllTasks().asLiveData()
+        } else {
+            // Convert the search result list to a LiveData
+            val liveData = MutableLiveData<List<Task>>()
+            viewModelScope.launch {
+                liveData.postValue(repository.searchTasks(query))
+            }
+            liveData
+        }
+    }
+
 
     private val _backupResult = MutableLiveData<BackupResult>()
     val backupResult: LiveData<BackupResult> = _backupResult
 
+    // One-shot event: fires when a new task is saved, carries the new row ID
+    private val _lastSavedTaskId = MutableLiveData<Long?>()
+    val lastSavedTaskId: LiveData<Long?> = _lastSavedTaskId
+
+    fun clearLastSavedTaskId() {
+        _lastSavedTaskId.value = null
+    }
+
+    // One-shot event: fires when a task is deleted (from anywhere), so MainActivity shows UNDO
+    private val _showUndoDelete = MutableLiveData<Boolean?>()
+    val showUndoDelete: LiveData<Boolean?> = _showUndoDelete
+
+    fun clearUndoDelete() {
+        _showUndoDelete.value = null
+    }
+
     fun addTask(task: Task) = viewModelScope.launch {
-        repository.insertTask(task)
+        val newId = repository.insertTask(task)
+        _lastSavedTaskId.postValue(newId)
+    }
+
+    fun toggleComplete(task: Task) = viewModelScope.launch {
+        val updatedTask = task.copy(isCompleted = !task.isCompleted)
+        repository.updateTask(updatedTask)
+    }
+
+    fun updateTask(task: Task) = viewModelScope.launch {
+        repository.updateTask(task)
     }
 
     fun deleteTask(task: Task) = viewModelScope.launch {
         repository.deleteTask(task)
         recentlyDeletedTask = task
+        _showUndoDelete.postValue(true)
     }
 
     fun undoDelete() {
@@ -129,7 +170,11 @@ class TaskViewModel(application: Application): AndroidViewModel(application) {
             oldTasks.forEach {
                 repository.insertTask(Task(name = it.name, isHighPriority = it.isHighPriority))
             }
-            prefs.edit { remove("taskList") }
+        prefs.edit { remove("taskList") }
         }
+    }
+
+    fun searchTasks(query: String) {
+        _searchQuery.value = query
     }
 }

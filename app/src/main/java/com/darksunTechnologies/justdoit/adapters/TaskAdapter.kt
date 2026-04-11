@@ -13,7 +13,9 @@ import com.darksunTechnologies.justdoit.TaskDetailActivity
 import com.darksunTechnologies.justdoit.R
 import com.darksunTechnologies.justdoit.models.Task
 
-class TaskAdapter: ListAdapter<Task, TaskAdapter.TaskViewHolder>(DIFF_CALLBACK) {
+class TaskAdapter(
+    private val onTaskClick: (Task) -> Unit
+) : ListAdapter<Task, TaskAdapter.TaskViewHolder>(DIFF_CALLBACK) {
     class TaskViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TaskViewHolder {
@@ -29,15 +31,47 @@ class TaskAdapter: ListAdapter<Task, TaskAdapter.TaskViewHolder>(DIFF_CALLBACK) 
         val highPriorityIcon = holder.itemView.findViewById<ImageView>(R.id.highPriority_Icon)
 
         taskTV.text = currTask.name
+        
+        // Apply strikethrough and fade if completed
+        if (currTask.isCompleted) {
+            taskTV.paintFlags = taskTV.paintFlags or android.graphics.Paint.STRIKE_THRU_TEXT_FLAG
+            holder.itemView.alpha = 0.6f
+        } else {
+            taskTV.paintFlags = taskTV.paintFlags and android.graphics.Paint.STRIKE_THRU_TEXT_FLAG.inv()
+            holder.itemView.alpha = 1.0f
+        }
+
         highPriorityIcon.visibility =
             if (currTask.isHighPriority) View.VISIBLE else View.GONE
 
-        holder.itemView.setOnClickListener {
+        // Due date display + overdue highlighting
+        val llDueDate = holder.itemView.findViewById<android.widget.LinearLayout>(R.id.llTaskDueDate)
+        val dueDateTV = holder.itemView.findViewById<TextView>(R.id.tvTaskDueDate)
+        val dueDateIcon = holder.itemView.findViewById<ImageView>(R.id.ivTaskDueDateIcon)
+
+        if (currTask.dueDate != null) {
+            val formatted = java.text.SimpleDateFormat("MMM d", java.util.Locale.getDefault())
+                .format(java.util.Date(currTask.dueDate))
+            dueDateTV.text = "Due $formatted"
+            llDueDate.visibility = View.VISIBLE
+
+            val isOverdue = currTask.dueDate < System.currentTimeMillis() && !currTask.isCompleted
             val context = holder.itemView.context
-            val intent = Intent(context, TaskDetailActivity::class.java)
-            intent.putExtra("task_name", currTask.name)
-            intent.putExtra("task_priority", currTask.isHighPriority)
-            context.startActivity(intent)
+            if (isOverdue) {
+                dueDateTV.setTextColor(context.getColor(R.color.overdue_red))
+                dueDateIcon.setColorFilter(context.getColor(R.color.overdue_red))
+                llDueDate.backgroundTintList = android.content.res.ColorStateList.valueOf(context.getColor(R.color.overdue_red_soft))
+            } else {
+                dueDateTV.setTextColor(context.getColor(R.color.text_sec))
+                dueDateIcon.setColorFilter(context.getColor(R.color.text_sec))
+                llDueDate.backgroundTintList = android.content.res.ColorStateList.valueOf(context.getColor(R.color.grey_light))
+            }
+        } else {
+            llDueDate.visibility = View.GONE
+        }
+
+        holder.itemView.setOnClickListener {
+            onTaskClick(currTask)
         }
     }
 

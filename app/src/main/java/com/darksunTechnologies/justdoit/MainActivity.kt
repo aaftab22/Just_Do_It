@@ -1,34 +1,30 @@
 package com.darksunTechnologies.justdoit
 
+import android.Manifest
+import android.app.AlarmManager
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.content.Context
 import android.content.Intent
-import android.graphics.Canvas
-import android.graphics.Color
+import android.os.Build
 import android.os.Bundle
-import android.view.Menu
-import android.view.MenuInflater
-import android.view.MenuItem
 import androidx.activity.addCallback
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.core.widget.addTextChangedListener
-import androidx.recyclerview.widget.ItemTouchHelper
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import com.darksunTechnologies.justdoit.adapters.TaskAdapter
 import com.darksunTechnologies.justdoit.databinding.ActivityMainBinding
-import com.darksunTechnologies.justdoit.models.Task
 import com.darksunTechnologies.justdoit.viewmodel.TaskViewModel
 import com.google.android.material.snackbar.Snackbar
-import it.xabaras.android.recyclerview.swipedecorator.RecyclerViewSwipeDecorator
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
-    private val viewModel: TaskViewModel by viewModels()
-    private lateinit var myAdapter: TaskAdapter
+    private val taskViewModel: TaskViewModel by viewModels()
+    private lateinit var shakeDetector: ShakeDetector
 
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
@@ -36,35 +32,91 @@ class MainActivity : AppCompatActivity() {
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(binding.main) { v, insets ->
-            val systemBars = insets.getInsets(androidx.core.view.WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+        ViewCompat.setOnApplyWindowInsetsListener(binding.appBarLayout) { view, insets ->
+            val statusBar = insets.getInsets(WindowInsetsCompat.Type.statusBars())
+            view.setPadding(0, statusBar.top, 0, 0)
             insets
         }
-        setSupportActionBar(binding.myToolbar)
 
-        val overFlowIcon = binding.myToolbar.overflowIcon
-        overFlowIcon?.setTint(
-            ContextCompat.getColor(this, android.R.color.white)
-        )
+        taskViewModel.migrateFromSharedPrefsIfNeeded(this)
 
-        myAdapter = TaskAdapter()
-        binding.tasksRV.adapter = myAdapter
-        binding.tasksRV.layoutManager = LinearLayoutManager(this)
+        // Integrated options menu inside the search bar
+        binding.btnMenu.setOnClickListener {
+            showOptionsMenu()
+        }
 
-        viewModel.migrateFromSharedPrefsIfNeeded(this)
-
+        // Back button sends to background instead of closing
         onBackPressedDispatcher.addCallback(this) {
             moveTaskToBack(true)
         }
 
-        attachSwipeToDelete()
+        // FAB opens Quick Capture bottom sheet
+        binding.fabCapture
+            .setOnClickListener {
+                val sheet = QuickCaptureBottomSheet()
+                sheet.show(supportFragmentManager, QuickCaptureBottomSheet.TAG)
+            }
 
-        viewModel.tasks.observe(this) { list ->
-            myAdapter.submitList(list)
+        if (Build.VERSION.SDK_INT >= 33) {
+            notificationPermissionsLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
         }
 
-        viewModel.backupResult.observe(this) { result ->
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val alarmManager = getSystemService(AlarmManager::class.java)
+            if (!alarmManager.canScheduleExactAlarms()) {
+                AlertDialog.Builder(this)
+                    .setTitle("Allow Alarms & Reminders")
+                    .setMessage("Required to send task reminders on time.")
+                    .setPositiveButton("Open Settings") { _, _ ->
+                        startActivity(Intent(android.provider.Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM))
+                    }
+                    .setNegativeButton("Skip", null)
+                    .show()
+            }
+        }
+
+        createNotificationChannel(this)
+
+        // Observer: show "Task saved! EDIT" Snackbar after Quick Capture
+        taskViewModel.lastSavedTaskId.observe(this) { taskId ->
+            if (taskId == null) return@observe
+
+            Snackbar.make(binding.root, "Task saved!", Snackbar.LENGTH_LONG)
+                .setAction("EDIT") {
+                    val task = taskViewModel.tasks.value?.find { it.id == taskId.toInt() }
+                    if (task != null) {
+                        val intent = Intent(this, TaskDetailActivity::class.java).apply {
+                            putExtra("task_id", task.id)
+                            putExtra("task_name", task.name)
+                            putExtra("task_priority", task.isHighPriority)
+                            putExtra("task_completed", task.isCompleted)
+                            putExtra("task_due_date", task.dueDate ?: -1L)
+                            putExtra("task_has_reminder", task.hasReminder)
+                            putExtra("task_created_at", task.createdAt)
+                            putExtra("task_source", task.source)
+                            putExtra("start_in_edit_mode", true)
+                        }
+                        startActivity(intent)
+                    }
+                }
+                .show()
+
+            taskViewModel.clearLastSavedTaskId() // consume the event
+        }
+
+        // Observer: show UNDO Snackbar when task is deleted from anywhere (including Detail screen)
+        taskViewModel.showUndoDelete.observe(this) { triggered ->
+            if (triggered != true) return@observe
+
+            Snackbar.make(binding.root, "Task deleted", Snackbar.LENGTH_LONG)
+                .setAction("UNDO") { taskViewModel.undoDelete() }
+                .show()
+
+            taskViewModel.clearUndoDelete() // consume the event
+        }
+
+        // Observe backup results
+        taskViewModel.backupResult.observe(this) { result ->
             when (result) {
                 is TaskViewModel.BackupResult.Success -> {
                     Snackbar.make(binding.root, result.message, Snackbar.LENGTH_LONG).show()
@@ -75,146 +127,106 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        binding.btnAdd.isEnabled = false
-
-        binding.taskNameET.addTextChangedListener { text ->
-            binding.btnAdd.isEnabled = !text.isNullOrEmpty()
+        // Search functionality
+        binding.searchEditText.addTextChangedListener { text ->
+            val query = text?.toString()?.trim() ?: ""
+            taskViewModel.searchTasks(query)
         }
 
-        //add button onClickListener
-        binding.btnAdd.setOnClickListener {
-            addTask()
+        // Initialize shake to create
+        shakeDetector = ShakeDetector(this) {
+            val sheet = QuickCaptureBottomSheet()
+            if (supportFragmentManager.findFragmentByTag(QuickCaptureBottomSheet.TAG) == null) {
+                sheet.show(supportFragmentManager, QuickCaptureBottomSheet.TAG)
+            }
         }
     }
 
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        val inflater: MenuInflater = menuInflater
-        inflater.inflate(R.menu.option_menu, menu)
-        return true
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when (item.itemId) {
-            R.id.delete_all_tab -> {
-                deleteAll()
-                true
-            }
-            R.id.about_tab -> {
-                startActivity(Intent(this, AboutUsActivity::class.java))
-                true
-            }
-            R.id.backup_tasks -> {
-                if (viewModel.tasks.value.isNullOrEmpty()) {
-                    Snackbar.make(binding.root, "No tasks to backup", Snackbar.LENGTH_SHORT).show()
-                    return true
+    private fun showOptionsMenu() {
+        val sheet = SettingsBottomSheet { action ->
+            when (action) {
+                SettingsBottomSheet.Action.DELETE_ALL -> deleteAll()
+                SettingsBottomSheet.Action.ABOUT -> startActivity(Intent(this, AboutUsActivity::class.java))
+                SettingsBottomSheet.Action.BACKUP -> {
+                    if (taskViewModel.tasks.value.isNullOrEmpty()) {
+                        Snackbar.make(binding.root, "No tasks to backup", Snackbar.LENGTH_SHORT).show()
+                    } else {
+                        createBackupFileLauncher.launch("justdoit_tasks_backup.json")
+                    }
                 }
-                createBackupFileLauncher.launch("justdoit_tasks_backup.json")
-                true
+                SettingsBottomSheet.Action.RESTORE -> pickRestoreFileLauncher.launch(arrayOf("application/json"))
             }
-            R.id.restore_tasks -> {
-                pickRestoreFileLauncher.launch(arrayOf("application/json"))
-                true
-            }
-            else -> super.onOptionsItemSelected(item)
         }
+        sheet.show(supportFragmentManager, SettingsBottomSheet.TAG)
     }
 
-    private fun addTask() {
-        val nameFromUI:String = binding.taskNameET.text.toString()
-        val isHighPriorityFromUI = binding.highPrioritySwitch.isChecked
+    override fun onResume() {
+        super.onResume()
+        shakeDetector.start()
+    }
 
-        val taskToAdd = Task(0,name = nameFromUI, isHighPriority = isHighPriorityFromUI)
-        viewModel.addTask(taskToAdd)
-
-        //  clear form and wait for new input
-        binding.taskNameET.setText("")
-        binding.highPrioritySwitch.isChecked = false
+    override fun onPause() {
+        super.onPause()
+        shakeDetector.stop()
     }
 
     private fun deleteAll() {
-        // delete all items in the list
         AlertDialog.Builder(this)
             .setTitle("Delete all tasks?")
             .setMessage("This action cannot be undone.")
             .setPositiveButton("Delete") { _, _ ->
-                viewModel.clearAll()
-
-                Snackbar.make(binding.root, "All items deleted!", Snackbar.LENGTH_LONG)
-                    .setAction("UNDO") {
-                        viewModel.undoDeleteAll()
-                    }
+                taskViewModel.clearAll()
+                Snackbar.make(binding.root, "All tasks deleted!", Snackbar.LENGTH_LONG)
+                    .setAction("UNDO") { taskViewModel.undoDeleteAll() }
                     .show()
             }
             .setNegativeButton("Cancel", null)
             .show()
     }
 
-    private fun attachSwipeToDelete() {
-
-        val swipeCallback = object :
-            ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
-
-            override fun onMove(
-                recyclerView: RecyclerView,
-                viewHolder: RecyclerView.ViewHolder,
-                target: RecyclerView.ViewHolder
-            ): Boolean = false
-
-            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-                val position = viewHolder.bindingAdapterPosition
-                val task = myAdapter.currentList[position]
-
-                viewModel.deleteTask(task)
-
-                Snackbar.make(binding.root, "Task Deleted", Snackbar.LENGTH_LONG)
-                    .setAction("UNDO") {
-                        viewModel.undoDelete()
-                    }
-                    .show()
-            }
-
-            override fun onChildDraw(
-                c: Canvas,
-                recyclerView: RecyclerView,
-                viewHolder: RecyclerView.ViewHolder,
-                dX: Float,
-                dY: Float,
-                actionState: Int,
-                isCurrentlyActive: Boolean
-            ) {
-                RecyclerViewSwipeDecorator.Builder(
-                    c,
-                    recyclerView,
-                    viewHolder,
-                    dX,
-                    dY,
-                    actionState,
-                    isCurrentlyActive
-                )
-                    .addSwipeLeftBackgroundColor(Color.RED)
-                    .addSwipeLeftActionIcon(R.drawable.delete)
-                    .setSwipeLeftActionIconTint(Color.WHITE)
-                    .create()
-                    .decorate()
-
-                super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
-            }
-        }
-
-        ItemTouchHelper(swipeCallback).attachToRecyclerView(binding.tasksRV)
-    }
-
-    private val createBackupFileLauncher =
-        registerForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri ->
+    private val createBackupFileLauncher = registerForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri ->
             if (uri != null) {
-                viewModel.backupToUri(this, uri)
+                taskViewModel.backupToUri(this, uri)
             }
         }
 
     private val pickRestoreFileLauncher =
         registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
             if (uri != null) {
-                viewModel.restoreFromUri(this, uri)
+                taskViewModel.restoreFromUri(this, uri)
+            }
+        }
+
+    fun createNotificationChannel(context: Context) {
+            val channel = NotificationChannel(
+                "task_reminders",
+                "Task Reminders",
+                NotificationManager.IMPORTANCE_HIGH
+            ).apply {
+                description = "Channels for task scheduled reminders"
+                enableLights(true)
+                enableVibration(true)
+            }
+            val manager = context.getSystemService(NotificationManager::class.java)
+            manager.createNotificationChannel(channel)
+    }
+
+    private val notificationPermissionsLauncher =
+        registerForActivityResult(
+            ActivityResultContracts.RequestPermission()
+        ) { isGranted ->
+            if (!isGranted)
+            {
+                AlertDialog.Builder(this)
+                    .setTitle("Enable Notification")
+                    .setMessage("Allow notifications to get task reminders on time.")
+                    .setPositiveButton("Open Settings") { _, _ ->
+                        startActivity(Intent(android.provider.Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
+                            putExtra(android.provider.Settings.EXTRA_APP_PACKAGE, packageName)
+                        })
+                    }
+                    .setNegativeButton("Skip Anyway", null)
+                    .show()
             }
         }
 }
