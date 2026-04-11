@@ -27,10 +27,8 @@ class BootReceiver : BroadcastReceiver() {
 
                 var count = 0
 
-                val alarmHelper = AlarmHelper()
-
                 for (task in tasks){
-                    alarmHelper.scheduleReminder(context,task)
+                    AlarmHelper.scheduleReminder(context, task)
                     count++
                 }
 

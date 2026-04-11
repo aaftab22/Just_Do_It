@@ -252,9 +252,8 @@ class TaskDetailActivity : AppCompatActivity() {
         taskViewModel.updateTask(task)
 
         // Cancel-before-schedule: always clean up old alarm first
-        val alarmHelper = AlarmHelper()
-        alarmHelper.cancelReminder(this, task.id)
-        alarmHelper.scheduleReminder(this, task)
+        AlarmHelper.cancelReminder(this, task.id)
+        AlarmHelper.scheduleReminder(this, task)
     }
 
      //Manual save: called when user taps the checkmark after editing title/description.

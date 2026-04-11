@@ -7,13 +7,7 @@ import android.content.Intent
 import android.os.Build
 import com.darksunTechnologies.justdoit.models.Task
 
-class AlarmHelper {
-
-    /**
-     * Cancels any existing alarm for the given task.
-     * Must be called before scheduling a new alarm (cancel-before-schedule pattern)
-     * and when the user turns off the reminder toggle.
-     */
+object AlarmHelper {
     fun cancelReminder(context: Context, taskId: Int) {
         val intent = Intent(context, ReminderReceiver::class.java)
         val pendingIntent = PendingIntent.getBroadcast(
@@ -31,15 +25,14 @@ class AlarmHelper {
         }
     }
 
-    /**
-     * Schedules an exact alarm for the task's due date.
-     * Always call cancelReminder() before this to avoid ghost alarms.
-     */
+     //Schedules an exact alarm for the task's due date.
+     //Always call cancelReminder() before this to avoid ghost alarms.
     fun scheduleReminder(context: Context, task: Task) {
         android.util.Log.d("AlarmHelper", "Scheduling alarm for task: ${task.name} at ${task.dueDate}")
         if (!task.hasReminder || task.dueDate == null) return
 
         val intent = Intent(context, ReminderReceiver::class.java).apply {
+            putExtra("task_id", task.id)
             putExtra("task_name", task.name)
         }
 
@@ -62,7 +55,7 @@ class AlarmHelper {
         try {
             alarmManager.setExactAndAllowWhileIdle(
                 AlarmManager.RTC_WAKEUP,
-                task.dueDate!!,
+                task.dueDate,
                 pendingIntent
             )
             android.util.Log.d("AlarmHelper", "Alarm set successfully for ${task.dueDate}")
