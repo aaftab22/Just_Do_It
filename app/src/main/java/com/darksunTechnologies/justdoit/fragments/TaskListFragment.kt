@@ -20,12 +20,31 @@ import com.darksunTechnologies.justdoit.viewmodel.TaskViewModel
 import com.google.android.material.snackbar.Snackbar
 import it.xabaras.android.recyclerview.swipedecorator.RecyclerViewSwipeDecorator
 
+import androidx.recyclerview.widget.ConcatAdapter
+import com.darksunTechnologies.justdoit.adapters.SectionHeaderAdapter
+
 class TaskListFragment : Fragment() {
 
     private val viewModel: TaskViewModel by activityViewModels()
-    private lateinit var myAdapter: TaskAdapter
+    
+    // Adapters
+    private lateinit var overdueHeader: SectionHeaderAdapter
+    private lateinit var overdueAdapter: TaskAdapter
+    private lateinit var activeHeader: SectionHeaderAdapter
+    private lateinit var activeAdapter: TaskAdapter
+    private lateinit var completedHeader: SectionHeaderAdapter
+    private lateinit var completedAdapter: TaskAdapter
+    
+    // Expansion State
+    private var overdueExpanded = true
+    private var activeExpanded = true
+    private var completedExpanded = false
 
-    // ActivityResultLauncher: detects when we come back from TaskDetailActivity
+    // Cached Lists
+    private var currentOverdueTasks: List<com.darksunTechnologies.justdoit.models.Task> = emptyList()
+    private var currentActiveTasks: List<com.darksunTechnologies.justdoit.models.Task> = emptyList()
+    private var currentCompletedTasks: List<com.darksunTechnologies.justdoit.models.Task> = emptyList()
+
     private val taskDetailLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
@@ -39,7 +58,6 @@ class TaskListFragment : Fragment() {
                 val task = com.darksunTechnologies.justdoit.models.Task(
                     id = id, name = name, isHighPriority = isHighPriority
                 )
-                // Delete in THIS ViewModel so undoDelete() has access to recentlyDeletedTask
                 viewModel.deleteTask(task)
 
                 Snackbar.make(requireView(), "Task deleted", Snackbar.LENGTH_LONG)
@@ -63,8 +81,38 @@ class TaskListFragment : Fragment() {
         val recyclerView = view.findViewById<RecyclerView>(R.id.tasksRV)
         val emptyState = view.findViewById<View>(R.id.emptyState)
 
-        // Pass click callback — fragment controls the launch
-        myAdapter = TaskAdapter { task ->
+        setupAdapters(recyclerView)
+
+        viewModel.tasks.observe(viewLifecycleOwner) { allTasks ->
+            val now = System.currentTimeMillis()
+
+            // 1. Split and Sort
+            currentOverdueTasks = allTasks.filter { !it.isCompleted && it.dueDate != null && it.dueDate < now }
+                .sortedBy { it.dueDate }
+            
+            currentActiveTasks = allTasks.filter { !it.isCompleted && (it.dueDate == null || it.dueDate >= now) }
+                .sortedBy { it.dueDate ?: Long.MAX_VALUE }
+            
+            currentCompletedTasks = allTasks.filter { it.isCompleted }
+
+            // 2. Update Headers
+            overdueHeader.updateCount(currentOverdueTasks.size)
+            activeHeader.updateCount(currentActiveTasks.size)
+            completedHeader.updateCount(currentCompletedTasks.size)
+
+            // 3. Submit Lists
+            overdueAdapter.submitList(if (overdueExpanded) currentOverdueTasks else emptyList())
+            activeAdapter.submitList(if (activeExpanded) currentActiveTasks else emptyList())
+            completedAdapter.submitList(if (completedExpanded) currentCompletedTasks else emptyList())
+
+            // 4. Visibility
+            emptyState.visibility = if (allTasks.isNullOrEmpty()) View.VISIBLE else View.GONE
+            recyclerView.visibility = if (allTasks.isNullOrEmpty()) View.GONE else View.VISIBLE
+        }
+    }
+
+    private fun setupAdapters(recyclerView: RecyclerView) {
+        val onTaskClick: (com.darksunTechnologies.justdoit.models.Task) -> Unit = { task ->
             val intent = Intent(requireContext(), TaskDetailActivity::class.java).apply {
                 putExtra("task_id", task.id)
                 putExtra("task_name", task.name)
@@ -78,74 +126,47 @@ class TaskListFragment : Fragment() {
             taskDetailLauncher.launch(intent)
         }
 
-        recyclerView.adapter = myAdapter
+        val onTaskDelete: (com.darksunTechnologies.justdoit.models.Task) -> Unit = { task ->
+            viewModel.deleteTask(task)
+            Snackbar.make(requireView(), "Task deleted", Snackbar.LENGTH_LONG)
+                .setAction("UNDO") { viewModel.undoDelete() }
+                .show()
+        }
+
+        val onTaskToggle: (com.darksunTechnologies.justdoit.models.Task) -> Unit = { task ->
+            viewModel.toggleComplete(task)
+            val msg = if (task.isCompleted) "Task reactivated" else "Task completed \u2713"
+            Snackbar.make(requireView(), msg, Snackbar.LENGTH_SHORT).show()
+        }
+
+        // Initialize adapters
+        overdueAdapter = TaskAdapter(onTaskClick, onTaskDelete, onTaskToggle)
+        activeAdapter = TaskAdapter(onTaskClick, onTaskDelete, onTaskToggle)
+        completedAdapter = TaskAdapter(onTaskClick, onTaskDelete, onTaskToggle)
+
+        overdueHeader = SectionHeaderAdapter("Overdue", 0, overdueExpanded) { expanded ->
+            overdueExpanded = expanded
+            overdueAdapter.submitList(if (expanded) currentOverdueTasks else emptyList())
+        }
+        activeHeader = SectionHeaderAdapter("Active", 0, activeExpanded) { expanded ->
+            activeExpanded = expanded
+            activeAdapter.submitList(if (expanded) currentActiveTasks else emptyList())
+        }
+        completedHeader = SectionHeaderAdapter("Completed", 0, completedExpanded) { expanded ->
+            completedExpanded = expanded
+            completedAdapter.submitList(if (expanded) currentCompletedTasks else emptyList())
+        }
+
+        // Attach Swipe
+        ItemTouchHelper(overdueAdapter.getSwipeCallback()).attachToRecyclerView(recyclerView)
+        ItemTouchHelper(activeAdapter.getSwipeCallback()).attachToRecyclerView(recyclerView)
+        ItemTouchHelper(completedAdapter.getSwipeCallback()).attachToRecyclerView(recyclerView)
+
+        recyclerView.adapter = ConcatAdapter(
+            overdueHeader, overdueAdapter,
+            activeHeader, activeAdapter,
+            completedHeader, completedAdapter
+        )
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
-
-        attachSwipeActions(recyclerView)
-
-        viewModel.tasks.observe(viewLifecycleOwner) { list ->
-            myAdapter.submitList(list)
-            emptyState.visibility = if (list.isNullOrEmpty()) View.VISIBLE else View.GONE
-            recyclerView.visibility = if (list.isNullOrEmpty()) View.GONE else View.VISIBLE
-        }
-    }
-
-    private fun attachSwipeActions(recyclerView: RecyclerView) {
-        val swipeCallback = object :
-            ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT) {
-
-            override fun onMove(
-                recyclerView: RecyclerView,
-                viewHolder: RecyclerView.ViewHolder,
-                target: RecyclerView.ViewHolder
-            ): Boolean = false
-
-            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-                val position = viewHolder.bindingAdapterPosition
-                val task = myAdapter.currentList[position]
-
-                when (direction) {
-                    ItemTouchHelper.LEFT -> {
-                        viewModel.deleteTask(task)
-                        Snackbar.make(requireView(), "Task deleted", Snackbar.LENGTH_LONG)
-                            .setAction("UNDO") { viewModel.undoDelete() }
-                            .show()
-                    }
-                    ItemTouchHelper.RIGHT -> {
-                        viewModel.toggleComplete(task)
-                        val msg = if (task.isCompleted) "Task reactivated" else "Task completed ✓"
-                        Snackbar.make(requireView(), msg, Snackbar.LENGTH_SHORT).show()
-                    }
-                }
-            }
-
-            override fun onChildDraw(
-                c: Canvas,
-                recyclerView: RecyclerView,
-                viewHolder: RecyclerView.ViewHolder,
-                dX: Float,
-                dY: Float,
-                actionState: Int,
-                isCurrentlyActive: Boolean
-            ) {
-                RecyclerViewSwipeDecorator.Builder(
-                    c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive
-                )
-                    .addSwipeLeftBackgroundColor(Color.parseColor("#EF4444"))
-                    .addSwipeLeftActionIcon(R.drawable.delete)
-                    .setSwipeLeftActionIconTint(Color.WHITE)
-                    .addSwipeLeftCornerRadius(1, 12f)
-                    .addSwipeRightBackgroundColor(Color.parseColor("#22C55E"))
-                    .addSwipeRightActionIcon(R.drawable.ic_check)
-                    .setSwipeRightActionIconTint(Color.WHITE)
-                    .addSwipeRightCornerRadius(1, 12f)
-                    .create()
-                    .decorate()
-
-                super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
-            }
-        }
-
-        ItemTouchHelper(swipeCallback).attachToRecyclerView(recyclerView)
     }
 }
