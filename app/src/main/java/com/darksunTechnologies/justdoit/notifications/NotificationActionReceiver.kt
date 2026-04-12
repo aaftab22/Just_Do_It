@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.util.Log
 import com.darksunTechnologies.justdoit.database.AppDatabase
+import com.darksunTechnologies.justdoit.database.TaskRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -24,30 +25,36 @@ class NotificationActionReceiver : BroadcastReceiver() {
             try {
                 val db = AppDatabase.getInstance(context)
                 val dao = db.taskDao()
+                val repo = TaskRepository(dao)
 
                 when (action) {
                     ReminderReceiver.ACTION_MARK_DONE -> {
-                        // 1. Cancel the scheduled alarm so it never fires again
-                        AlarmHelper.cancelReminder(context, taskId)
-                        // 2. Mark done in DB
-                        dao.markTaskDone(taskId)
-                        Log.d("ActionReceiver", "Task $taskId marked done & alarm cancelled.")
+                        val task = dao.getTaskById(taskId)
+                        if (task != null && !task.isCompleted) {
+                            // 1. Cancel the scheduled alarm so it never fires again
+                            AlarmHelper.cancelReminder(context, taskId)
+                            // 2. Delegate DB work to Central Repository
+                            val newlySpawnedTask = repo.handleTaskCompletion(task)
+                            // 3. Schedule newly spawned reminder
+                            if (newlySpawnedTask != null && newlySpawnedTask.hasReminder) {
+                                AlarmHelper.scheduleReminder(context, newlySpawnedTask)
+                            }
+                            Log.d("ActionReceiver", "Task $taskId marked done & recurring handled.")
+                        }
                     }
                     ReminderReceiver.ACTION_SNOOZE -> {
                         val task = dao.getTaskById(taskId) ?: return@launch
 
-                        // 1. Push time forward by 10 min
+                        // 1. Calculate time pushed forward by 10 min
                         val newTime = System.currentTimeMillis() + 600_000
 
-                        // 2. Update DB
-                        dao.updateTaskDueDate(taskId, newTime)
-
-                        // 3. Create updated copy for reschedule (Task fields are val)
-                        val updatedTask = task.copy(dueDate = newTime)
+                        // 2. Create updated copy ONLY for local reschedule (leaves Original DB Date intact for Recurring logic)
+                        val snoozeTask = task.copy(dueDate = newTime)
+                        
                         AlarmHelper.cancelReminder(context, taskId)
-                        AlarmHelper.scheduleReminder(context, updatedTask)
+                        AlarmHelper.scheduleReminder(context, snoozeTask)
 
-                        Log.d("ActionReceiver", "Task $taskId snoozed 10 mins to $newTime.")
+                        Log.d("ActionReceiver", "Task $taskId snoozed 10 mins to $newTime without mutating DB.")
                     }
                 }
 

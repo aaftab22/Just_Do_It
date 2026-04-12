@@ -28,4 +28,11 @@
     <string name="backup_tasks">Backup tasks</string>
     <string name="restore_tasks">Restore tasks</string>
 
+    <string-array name="repeat_array">
+        <item>None</item>
+        <item>Daily</item>
+        <item>Weekly</item>
+        <item>Monthly</item>
+    </string-array>
+
 </resources>

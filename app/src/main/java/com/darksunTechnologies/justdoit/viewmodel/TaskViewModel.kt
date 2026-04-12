@@ -11,6 +11,8 @@ import androidx.lifecycle.viewModelScope
 import com.darksunTechnologies.justdoit.database.AppDatabase
 import com.darksunTechnologies.justdoit.database.TaskRepository
 import com.darksunTechnologies.justdoit.models.Task
+import com.darksunTechnologies.justdoit.notifications.AlarmHelper
+import com.darksunTechnologies.justdoit.notifications.GeofenceManager
 import com.google.gson.Gson
 import kotlinx.coroutines.launch
 import androidx.core.content.edit
@@ -69,8 +71,28 @@ class TaskViewModel(application: Application): AndroidViewModel(application) {
     }
 
     fun toggleComplete(task: Task) = viewModelScope.launch {
-        val updatedTask = task.copy(isCompleted = !task.isCompleted)
-        repository.updateTask(updatedTask)
+        // If we are completing it now:
+        if (!task.isCompleted) {
+            // ALWAYS cancel the old alarm and geofence
+            AlarmHelper.cancelReminder(getApplication(), task.id)
+            GeofenceManager.removeGeofence(getApplication(), task.id)
+            
+            // Let Repo handle DB duplication
+            val newlySpawnedTask = repository.handleTaskCompletion(task)
+            
+            // If a new task was created and it needs a reminder, schedule it
+            if (newlySpawnedTask != null) {
+                if (newlySpawnedTask.hasReminder) {
+                    AlarmHelper.scheduleReminder(getApplication(), newlySpawnedTask)
+                }
+                if (newlySpawnedTask.hasLocationReminder) {
+                    GeofenceManager.addGeofence(getApplication(), newlySpawnedTask)
+                }
+            }
+        } else {
+            // Simple un-complete logic
+            repository.updateTask(task.copy(isCompleted = false))
+        }
     }
 
     fun updateTask(task: Task) = viewModelScope.launch {
@@ -79,6 +101,8 @@ class TaskViewModel(application: Application): AndroidViewModel(application) {
 
     fun deleteTask(task: Task) = viewModelScope.launch {
         repository.deleteTask(task)
+        AlarmHelper.cancelReminder(getApplication(), task.id)
+        GeofenceManager.removeGeofence(getApplication(), task.id)
         recentlyDeletedTask = task
         _showUndoDelete.postValue(true)
     }

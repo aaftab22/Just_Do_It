@@ -122,6 +122,7 @@ class TaskListFragment : Fragment() {
                 putExtra("task_has_reminder", task.hasReminder)
                 putExtra("task_created_at", task.createdAt)
                 putExtra("task_source", task.source)
+                putExtra("task_repeat_type", task.repeatType.name)
             }
             taskDetailLauncher.launch(intent)
         }

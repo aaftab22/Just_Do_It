@@ -3,6 +3,9 @@ package com.darksunTechnologies.justdoit
 import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.inputmethod.InputMethodManager
+import android.view.View
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -10,8 +13,10 @@ import androidx.core.graphics.toColorInt
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.darksunTechnologies.justdoit.databinding.ActivityTaskDetailBinding
+import com.darksunTechnologies.justdoit.models.RepeatType
 import com.darksunTechnologies.justdoit.models.Task
 import com.darksunTechnologies.justdoit.notifications.AlarmHelper
+import com.darksunTechnologies.justdoit.notifications.GeofenceManager
 import com.darksunTechnologies.justdoit.viewmodel.TaskViewModel
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.timepicker.MaterialTimePicker
@@ -39,6 +44,7 @@ class TaskDetailActivity : AppCompatActivity() {
     private var currentIsCompleted: Boolean = false
     private var taskCreatedAt: Long = System.currentTimeMillis()
     private var taskSource: String = "manual"
+    private var currentRepeatType: RepeatType = RepeatType.NONE
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -61,6 +67,8 @@ class TaskDetailActivity : AppCompatActivity() {
         currentHasReminder = intent.getBooleanExtra("task_has_reminder", false)
         taskCreatedAt = intent.getLongExtra("task_created_at", System.currentTimeMillis())
         taskSource = intent.getStringExtra("task_source") ?: "manual"
+        val typeString = intent.getStringExtra("task_repeat_type") ?: "NONE"
+        currentRepeatType = try { RepeatType.valueOf(typeString) } catch (e: Exception) { RepeatType.NONE }
 
         selectedDueDateMillis = intent.getLongExtra("task_due_date", -1L).takeIf { it != -1L }
         selectedDueDateMillis?.let {
@@ -92,6 +100,27 @@ class TaskDetailActivity : AppCompatActivity() {
         refreshDueTimeDisplay()
         binding.switchReminder.isChecked = currentHasReminder
         binding.tvReminderStatus.text = if (currentHasReminder) "On" else "Off"
+
+        // Repeat selector setup
+        val repeatAdapter = ArrayAdapter.createFromResource(
+            this,
+            R.array.repeat_array,
+            android.R.layout.simple_spinner_item
+        )
+        repeatAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        binding.spinnerRepeat.adapter = repeatAdapter
+        binding.spinnerRepeat.setSelection(currentRepeatType.ordinal)
+        
+        binding.spinnerRepeat.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                val selectedType = RepeatType.values()[position]
+                if (currentRepeatType != selectedType) {
+                    currentRepeatType = selectedType
+                    autoSave()
+                }
+            }
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
+        }
 
 
         // AUTO-SAVE: Due Date (immediate on picker OK)
@@ -237,6 +266,7 @@ class TaskDetailActivity : AppCompatActivity() {
             isCompleted = currentIsCompleted,
             dueDate = finalDueDate,
             hasReminder = currentHasReminder,
+            repeatType = currentRepeatType,
             createdAt = taskCreatedAt,
             source = taskSource
         )
@@ -251,9 +281,12 @@ class TaskDetailActivity : AppCompatActivity() {
         val task = buildCurrentTask()
         taskViewModel.updateTask(task)
 
-        // Cancel-before-schedule: always clean up old alarm first
+        // Cancel-before-schedule: always clean up old alarm & location triggers first
         AlarmHelper.cancelReminder(this, task.id)
+        GeofenceManager.removeGeofence(this, task.id)
+        
         AlarmHelper.scheduleReminder(this, task)
+        GeofenceManager.addGeofence(this, task)
     }
 
      //Manual save: called when user taps the checkmark after editing title/description.

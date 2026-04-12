@@ -4,6 +4,10 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
+enum class RepeatType {
+    NONE, DAILY, WEEKLY, MONTHLY
+}
+
 @Entity(tableName = "tasks")
 data class Task(
     @PrimaryKey(autoGenerate = true)
@@ -24,5 +28,17 @@ data class Task(
     val isCompleted: Boolean = false,
 
     @ColumnInfo(defaultValue = "0")
-    val hasReminder: Boolean = false
+    val hasReminder: Boolean = false,
+
+    @ColumnInfo(defaultValue = "'NONE'")
+    val repeatType: RepeatType = RepeatType.NONE,
+
+    @ColumnInfo(defaultValue = "0")
+    val hasLocationReminder: Boolean = false,
+
+    val latitude: Double? = null,
+    val longitude: Double? = null,
+
+    @ColumnInfo(defaultValue = "100.0")
+    val radius: Float = 100f
 )
