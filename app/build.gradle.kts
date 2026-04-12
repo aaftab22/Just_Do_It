@@ -81,4 +81,7 @@ dependencies {
     //ViewPager2 + Fragment for tabs
     implementation(libs.androidx.viewpager2)
     implementation(libs.androidx.fragment.ktx)
+
+    // Location & Geofencing
+    implementation("com.google.android.gms:play-services-location:21.2.0")
 }

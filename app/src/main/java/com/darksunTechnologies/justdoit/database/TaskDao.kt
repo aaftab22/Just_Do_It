@@ -18,6 +18,9 @@ interface TaskDao {
     @Query("SELECT * FROM tasks WHERE hasReminder=1 AND dueDate > :currentTime")
     fun getActiveReminders(currentTime: Long): List<Task>
 
+    @Query("SELECT * FROM tasks WHERE hasLocationReminder = 1 AND isCompleted = 0 LIMIT 100")
+    fun getActiveLocationTasks(): List<Task>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertTask(task: Task): Long
 
