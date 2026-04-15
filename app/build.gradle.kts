@@ -21,8 +21,8 @@ android {
         minSdk = 26
         //noinspection OldTargetApi
         targetSdk = 35
-        versionCode = 17
-        versionName = "2.0.0"
+        versionCode = 18
+        versionName = "2.1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -81,4 +81,7 @@ dependencies {
     //ViewPager2 + Fragment for tabs
     implementation(libs.androidx.viewpager2)
     implementation(libs.androidx.fragment.ktx)
+
+    // Location & Geofencing
+    implementation("com.google.android.gms:play-services-location:21.2.0")
 }

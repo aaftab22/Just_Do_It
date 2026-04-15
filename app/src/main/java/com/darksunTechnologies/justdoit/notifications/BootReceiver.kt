@@ -32,8 +32,17 @@ class BootReceiver : BroadcastReceiver() {
                     count++
                 }
 
-                Log.d("BootReceiver","Rescheduled $count reminders")
+                Log.d("BootReceiver","Rescheduled $count time reminders")
 
+                // Re-register Geofences
+                val locationTasks = taskDao.getActiveLocationTasks() // Limit 100 enforced natively in Dao
+                var geofenceCount = 0
+                for (task in locationTasks){
+                    GeofenceManager.addGeofence(context, task)
+                    geofenceCount++
+                }
+
+                Log.d("BootReceiver","Rescheduled $geofenceCount location reminders")
             } finally {
                 pendingResult.finish()
             }

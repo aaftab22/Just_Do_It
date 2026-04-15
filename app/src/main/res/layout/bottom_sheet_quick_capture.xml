@@ -5,7 +5,7 @@
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:padding="24dp"
-    android:background="@android:color/white">
+    android:background="?attr/colorSurface">
 
     <!-- Handle bar -->
     <View
@@ -13,7 +13,7 @@
         android:layout_height="4dp"
         android:layout_gravity="center_horizontal"
         android:layout_marginBottom="16dp"
-        android:background="@android:color/darker_gray" />
+        android:background="@color/handle_bar" />
 
     <TextView
         android:layout_width="wrap_content"

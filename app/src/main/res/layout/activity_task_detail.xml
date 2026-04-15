@@ -5,23 +5,26 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/white"
+    android:background="?attr/colorSurface"
     android:fitsSystemWindows="true">
 
     <!-- Top Toolbar -->
+
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/my_toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        android:background="@color/white"
+        android:layout_marginTop="16dp"
+        android:background="?attr/colorSurface"
+        app:layout_constraintTop_toTopOf="parent"
         app:navigationIcon="?attr/homeAsUpIndicator"
-        app:layout_constraintTop_toTopOf="parent">
+        tools:layout_editor_absoluteX="-16dp">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Task Details"
-            android:textColor="@color/black"
+            android:textColor="@color/text_main"
             android:textSize="20sp"
             android:textStyle="bold" />
 
@@ -37,9 +40,9 @@
                 android:id="@+id/btnEdit"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
+                android:contentDescription="Edit task"
                 android:padding="12dp"
                 android:src="@drawable/ic_edit"
-                android:contentDescription="Edit task"
                 app:tint="@color/primary" />
 
         </LinearLayout>
@@ -49,7 +52,7 @@
         android:id="@+id/toolbar_divider"
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:background="#EEEEEE"
+        android:background="@color/divider"
         app:layout_constraintTop_toBottomOf="@id/my_toolbar" />
 
     <ScrollView
@@ -111,7 +114,7 @@
                     app:cardBackgroundColor="@color/red_soft"
                     app:cardCornerRadius="16dp"
                     app:cardElevation="0dp"
-                    app:rippleColor="#40000000">
+                    app:rippleColor="@color/ripple_dark">
 
                     <TextView
                         android:id="@+id/priorityValue"
@@ -148,12 +151,12 @@
                     android:layout_marginStart="8dp"
                     android:clickable="true"
                     android:focusable="true"
-                    app:cardBackgroundColor="@color/white"
+                    app:cardBackgroundColor="@color/surface_card"
                     app:cardCornerRadius="16dp"
                     app:cardElevation="0dp"
                     app:strokeColor="@color/grey_medium"
                     app:strokeWidth="1dp"
-                    app:rippleColor="#40000000">
+                    app:rippleColor="@color/ripple_dark">
 
                     <TextView
                         android:id="@+id/statusValue"
@@ -174,7 +177,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
                 android:layout_marginTop="20dp"
-                android:background="#EEEEEE"
+                android:background="@color/divider"
                 app:layout_constraintTop_toBottomOf="@id/statusPriorityContainer" />
 
             <!-- Date + Time Row -->
@@ -203,6 +206,7 @@
                         android:background="@drawable/circle_background"
                         android:backgroundTint="@color/grey_light"
                         android:src="@drawable/ic_clock"
+                        app:tint="@color/icon_tint"
                         android:contentDescription="Due date" />
 
                     <LinearLayout
@@ -250,6 +254,7 @@
                         android:background="@drawable/circle_background"
                         android:backgroundTint="@color/grey_light"
                         android:src="@drawable/ic_clock"
+                        app:tint="@color/icon_tint"
                         android:contentDescription="Due time" />
 
                     <LinearLayout
@@ -287,7 +292,7 @@
                 android:id="@+id/dividerReminder"
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
-                android:background="#EEEEEE"
+                android:background="@color/divider"
                 android:layout_marginTop="20dp"
                 app:layout_constraintTop_toBottomOf="@id/dateTimeContainer" />
 
@@ -307,6 +312,7 @@
                     android:background="@drawable/circle_background"
                     android:backgroundTint="@color/grey_light"
                     android:src="@drawable/ic_bell"
+                    app:tint="@color/icon_tint"
                     android:contentDescription="Reminder" />
 
                 <LinearLayout
@@ -346,8 +352,62 @@
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
                 android:layout_marginTop="20dp"
-                android:background="#EEEEEE"
+                android:background="@color/divider"
                 app:layout_constraintTop_toBottomOf="@id/reminderRow" />
+
+            <!-- Repeat Row -->
+            <LinearLayout
+                android:id="@+id/repeatRow"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                app:layout_constraintTop_toBottomOf="@id/divider2">
+
+                <ImageView
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:padding="8dp"
+                    android:background="@drawable/circle_background"
+                    android:backgroundTint="@color/grey_light"
+                    android:src="@drawable/ic_popup_sync"
+                    app:tint="@color/icon_tint"
+                    android:contentDescription="Repeat" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="12dp"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="REPEAT"
+                        android:textColor="@color/text_sec"
+                        android:textSize="12sp"
+                        android:textStyle="bold" />
+
+                    <Spinner
+                        android:id="@+id/spinnerRepeat"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="-4dp"
+                        android:entries="@array/repeat_array"
+                        android:spinnerMode="dialog" />
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <View
+                android:id="@+id/divider3"
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginTop="20dp"
+                android:background="@color/divider"
+                app:layout_constraintTop_toBottomOf="@id/repeatRow" />
 
             <!-- Description -->
             <TextView
@@ -360,7 +420,7 @@
                 android:textSize="12sp"
                 android:textStyle="bold"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/divider2" />
+                app:layout_constraintTop_toBottomOf="@id/divider3" />
 
             <EditText
                 android:id="@+id/etDescription"
@@ -398,7 +458,7 @@
                         android:layout_width="40dp"
                         android:layout_height="40dp"
                         android:background="@drawable/circle_background"
-                        android:backgroundTint="#E9D5FF"
+                        android:backgroundTint="@color/detail_meta_bg"
                         android:padding="8dp"
                         android:src="@drawable/prioritize"
                         app:tint="@color/primary" />
@@ -413,7 +473,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Smart Triggers Active"
-                            android:textColor="#4C1D95"
+                            android:textColor="@color/detail_meta_label"
                             android:textSize="14sp"
                             android:textStyle="bold" />
 
@@ -422,7 +482,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="2dp"
                             android:text="⚡ Auto-Surfaces: Walking + Near Grocery Store"
-                            android:textColor="#5B21B6"
+                            android:textColor="@color/detail_meta_value"
                             android:textSize="13sp" />
                     </LinearLayout>
                 </LinearLayout>
@@ -436,7 +496,7 @@
         android:id="@+id/bottom_actions"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/white"
+        android:background="?attr/colorSurface"
         android:orientation="horizontal"
         android:paddingVertical="12dp"
         app:layout_constraintBottom_toBottomOf="parent">
@@ -460,7 +520,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
                 android:text="DELETE"
-                android:textColor="@color/black"
+                android:textColor="@color/text_main"
                 android:textSize="10sp"
                 android:textStyle="bold" />
         </LinearLayout>
@@ -484,7 +544,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
                 android:text="DUPLICATE"
-                android:textColor="@color/black"
+                android:textColor="@color/text_main"
                 android:textSize="10sp"
                 android:textStyle="bold" />
         </LinearLayout>
@@ -502,7 +562,7 @@
                 android:layout_height="24dp"
                 android:src="@drawable/ic_check"
                 android:background="@drawable/circle_background"
-                android:backgroundTint="#F3E8FF"
+                android:backgroundTint="@color/detail_source_bg"
                 android:padding="4dp"
                 app:tint="@color/primary" />
 

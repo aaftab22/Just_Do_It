@@ -13,4 +13,43 @@
     <color name="text_sec">#4B5563</color>
     <color name="overdue_red">#EF4444</color>
     <color name="overdue_red_soft">#FEE2E2</color>
+
+    <!-- Semantic colors for theme-aware usage -->
+    <color name="surface_background">#F5F5F5</color>
+    <color name="surface_card">#FFFFFF</color>
+    <color name="divider">#EEEEEE</color>
+    <color name="divider_settings">#F0F0F0</color>
+    <color name="handle_bar">#E0E0E0</color>
+
+    <!-- Chip colors -->
+    <color name="chip_priority_high_bg">#FFE4E6</color>
+    <color name="chip_priority_high_text">#E11D48</color>
+    <color name="chip_priority_normal_bg">#F3F4F6</color>
+    <color name="chip_priority_normal_text">#4B5563</color>
+
+    <color name="chip_status_done_bg">#DCFCE7</color>
+    <color name="chip_status_done_text">#16A34A</color>
+    <color name="chip_status_done_stroke">#16A34A</color>
+    <color name="chip_status_todo_bg">#FFFFFF</color>
+    <color name="chip_status_todo_text">#374151</color>
+    <color name="chip_status_todo_stroke">#D1D5DB</color>
+
+    <!-- Task Detail metadata row -->
+    <color name="detail_meta_bg">#E9D5FF</color>
+    <color name="detail_meta_label">#4C1D95</color>
+    <color name="detail_meta_value">#5B21B6</color>
+    <color name="detail_source_bg">#F3E8FF</color>
+
+    <!-- Icon tints -->
+    <color name="icon_tint">#000000</color>
+    <color name="icon_tint_danger">#F44336</color>
+    <color name="text_danger">#F44336</color>
+
+    <!-- Splash / Intro -->
+    <color name="splash_text">#3F51B5</color>
+    <color name="intro_button">#3F51B5</color>
+    <color name="intro_button_faded">#703F51B5</color>
+
+    <!-- Ripple on cards -->
+    <color name="ripple_dark">#40000000</color>
 </resources>

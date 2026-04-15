@@ -68,7 +68,7 @@
             android:contentDescription="@string/delete_button_icon"
             android:src="@drawable/important"
             android:visibility="invisible"
-            app:tint="#F44336" />
+            app:tint="@color/icon_tint_danger" />
 
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

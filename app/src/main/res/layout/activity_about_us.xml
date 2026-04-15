@@ -5,7 +5,7 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F8F9FA"
+    android:background="@color/surface_background"
     tools:context=".AboutUsActivity">
 
     <com.google.android.material.appbar.AppBarLayout
@@ -89,7 +89,7 @@
                         android:text="@string/about_us_description"
                         android:lineSpacingExtra="4dp"
                         android:textSize="15sp"
-                        android:textColor="#444444"/>
+                        android:textColor="@color/text_sec"/>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
@@ -188,7 +188,7 @@
                         android:layout_height="wrap_content"
                         android:text="@string/complaint_here_email"
                         android:textSize="14sp"
-                        android:textColor="#777777"/>
+                        android:textColor="@color/grey_medium"/>
 
                     <TextView
                         android:id="@+id/email_address"
@@ -213,7 +213,7 @@
                 android:layout_marginTop="32dp"
                 android:text="v 1.2.0 - Crafted with Modernity"
                 android:textSize="12sp"
-                android:textColor="#AAAAAA"/>
+                android:textColor="@color/grey_medium"/>
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>

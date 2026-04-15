@@ -18,7 +18,7 @@ class SettingsBottomSheet(
     private val binding get() = _binding!!
 
     enum class Action {
-        DELETE_ALL, BACKUP, RESTORE, ABOUT
+        DELETE_ALL, BACKUP, RESTORE, ABOUT, THEME
     }
 
     override fun onCreateView(
@@ -50,6 +50,11 @@ class SettingsBottomSheet(
 
         binding.btnAbout.setOnClickListener {
             onAction(Action.ABOUT)
+            dismiss()
+        }
+
+        binding.btnTheme.setOnClickListener {
+            onAction(Action.THEME)
             dismiss()
         }
     }
