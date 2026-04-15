@@ -1,7 +1,55 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="white">#FFFFFF</color>
-    <color name="black">#000000</color>
-    <color name="primary">#90CAF9</color>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="primary">#CE93D8</color>
     <color name="onPrimary">#000000</color>
+    <color name="purple_soft">#2D1B3D</color>
+    <color name="red_soft">#3D1B1B</color>
+    <color name="red_dark">#FF6B6B</color>
+    <color name="grey_light">#2A2A2A</color>
+    <color name="grey_medium">#9E9E9E</color>
+    <color name="text_main">#E0E0E0</color>
+    <color name="text_sec">#BDBDBD</color>
+    <color name="overdue_red">#FF6B6B</color>
+    <color name="overdue_red_soft">#3D1B1B</color>
+
+    <!-- Semantic colors for theme-aware usage -->
+    <color name="surface_background">#121212</color>
+    <color name="surface_card">#1E1E1E</color>
+    <color name="divider">#333333</color>
+    <color name="divider_settings">#2A2A2A</color>
+    <color name="handle_bar">#555555</color>
+
+    <!-- Chip colors -->
+    <color name="chip_priority_high_bg">#3D1B1B</color>
+    <color name="chip_priority_high_text">#FF6B6B</color>
+    <color name="chip_priority_normal_bg">#2A2A2A</color>
+    <color name="chip_priority_normal_text">#BDBDBD</color>
+
+    <color name="chip_status_done_bg">#1B3D1B</color>
+    <color name="chip_status_done_text">#66BB6A</color>
+    <color name="chip_status_done_stroke">#66BB6A</color>
+    <color name="chip_status_todo_bg">#1E1E1E</color>
+    <color name="chip_status_todo_text">#E0E0E0</color>
+    <color name="chip_status_todo_stroke">#555555</color>
+
+    <!-- Task Detail metadata row -->
+    <color name="detail_meta_bg">#2D1B3D</color>
+    <color name="detail_meta_label">#CE93D8</color>
+    <color name="detail_meta_value">#B39DDB</color>
+    <color name="detail_source_bg">#2D1B3D</color>
+
+    <!-- Icon tints -->
+    <color name="icon_tint">#E0E0E0</color>
+    <color name="icon_tint_danger">#FF6B6B</color>
+    <color name="text_danger">#FF6B6B</color>
+
+    <!-- Splash / Intro -->
+    <color name="splash_text">#7986CB</color>
+    <color name="intro_button">#7986CB</color>
+    <color name="intro_button_faded">#707986CB</color>
+
+    <!-- Ripple on cards -->
+    <color name="ripple_dark">#40FFFFFF</color>
 </resources>

@@ -18,7 +18,9 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.widget.addTextChangedListener
 import com.darksunTechnologies.justdoit.databinding.ActivityMainBinding
+import com.darksunTechnologies.justdoit.datastore.ThemePreferences
 import com.darksunTechnologies.justdoit.viewmodel.TaskViewModel
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.snackbar.Snackbar
 
 class MainActivity : AppCompatActivity() {
@@ -147,6 +149,7 @@ class MainActivity : AppCompatActivity() {
             when (action) {
                 SettingsBottomSheet.Action.DELETE_ALL -> deleteAll()
                 SettingsBottomSheet.Action.ABOUT -> startActivity(Intent(this, AboutUsActivity::class.java))
+                SettingsBottomSheet.Action.THEME -> showThemeDialog()
                 SettingsBottomSheet.Action.BACKUP -> {
                     if (taskViewModel.tasks.value.isNullOrEmpty()) {
                         Snackbar.make(binding.root, "No tasks to backup", Snackbar.LENGTH_SHORT).show()
@@ -182,6 +185,37 @@ class MainActivity : AppCompatActivity() {
             }
             .setNegativeButton("Cancel", null)
             .show()
+    }
+
+    private fun showThemeDialog() {
+        val dialog = BottomSheetDialog(this)
+        val view = layoutInflater.inflate(R.layout.dialog_theme_selector, null)
+        dialog.setContentView(view)
+
+        val radioGroup = view.findViewById<android.widget.RadioGroup>(R.id.radioGroupTheme)
+
+        // Pre-select current saved theme
+        when (ThemePreferences.getSavedThemeMode(this)) {
+            ThemePreferences.MODE_SYSTEM -> radioGroup.check(R.id.radioSystemDefault)
+            ThemePreferences.MODE_LIGHT -> radioGroup.check(R.id.radioLight)
+            ThemePreferences.MODE_DARK -> radioGroup.check(R.id.radioDark)
+        }
+
+        radioGroup.setOnCheckedChangeListener { _, checkedId ->
+            val mode = when (checkedId) {
+                R.id.radioLight -> ThemePreferences.MODE_LIGHT
+                R.id.radioDark -> ThemePreferences.MODE_DARK
+                else -> ThemePreferences.MODE_SYSTEM
+            }
+            ThemePreferences.saveThemeMode(this, mode)
+
+            // CRITICAL: Dismiss dialog SYNCHRONOUSLY before applying theme
+            // to prevent WindowLeaked crash from Activity recreation
+            dialog.dismiss()
+            ThemePreferences.applyTheme(mode)
+        }
+
+        dialog.show()
     }
 
     private val createBackupFileLauncher = registerForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri ->

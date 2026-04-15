@@ -9,7 +9,7 @@ import android.widget.ArrayAdapter
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.graphics.toColorInt
+import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.darksunTechnologies.justdoit.databinding.ActivityTaskDetailBinding
@@ -113,7 +113,7 @@ class TaskDetailActivity : AppCompatActivity() {
         
         binding.spinnerRepeat.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                val selectedType = RepeatType.values()[position]
+                val selectedType = RepeatType.entries[position]
                 if (currentRepeatType != selectedType) {
                     currentRepeatType = selectedType
                     autoSave()
@@ -346,26 +346,26 @@ class TaskDetailActivity : AppCompatActivity() {
     private fun refreshPriorityChip() {
         if (currentIsHighPriority) {
             binding.priorityValue.text = "High"
-            binding.priorityCard.setCardBackgroundColor("#FFE4E6".toColorInt())
-            binding.priorityValue.setTextColor("#E11D48".toColorInt())
+            binding.priorityCard.setCardBackgroundColor(ContextCompat.getColor(this, R.color.chip_priority_high_bg))
+            binding.priorityValue.setTextColor(ContextCompat.getColor(this, R.color.chip_priority_high_text))
         } else {
             binding.priorityValue.text = "Normal"
-            binding.priorityCard.setCardBackgroundColor("#F3F4F6".toColorInt())
-            binding.priorityValue.setTextColor("#4B5563".toColorInt())
+            binding.priorityCard.setCardBackgroundColor(ContextCompat.getColor(this, R.color.chip_priority_normal_bg))
+            binding.priorityValue.setTextColor(ContextCompat.getColor(this, R.color.chip_priority_normal_text))
         }
     }
 
     private fun refreshStatusChip() {
         if (currentIsCompleted) {
             binding.statusValue.text = "Done"
-            binding.statusCard.setCardBackgroundColor("#DCFCE7".toColorInt())
-            binding.statusValue.setTextColor("#16A34A".toColorInt())
-            binding.statusCard.strokeColor = "#16A34A".toColorInt()
+            binding.statusCard.setCardBackgroundColor(ContextCompat.getColor(this, R.color.chip_status_done_bg))
+            binding.statusValue.setTextColor(ContextCompat.getColor(this, R.color.chip_status_done_text))
+            binding.statusCard.strokeColor = ContextCompat.getColor(this, R.color.chip_status_done_stroke)
         } else {
             binding.statusValue.text = "To Do"
-            binding.statusCard.setCardBackgroundColor("#FFFFFF".toColorInt())
-            binding.statusValue.setTextColor("#374151".toColorInt())
-            binding.statusCard.strokeColor = "#D1D5DB".toColorInt()
+            binding.statusCard.setCardBackgroundColor(ContextCompat.getColor(this, R.color.chip_status_todo_bg))
+            binding.statusValue.setTextColor(ContextCompat.getColor(this, R.color.chip_status_todo_text))
+            binding.statusCard.strokeColor = ContextCompat.getColor(this, R.color.chip_status_todo_stroke)
         }
     }
 

@@ -1,8 +1,6 @@
 package com.darksunTechnologies.justdoit.fragments
 
 import android.content.Intent
-import android.graphics.Canvas
-import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -18,8 +16,6 @@ import com.darksunTechnologies.justdoit.TaskDetailActivity
 import com.darksunTechnologies.justdoit.adapters.TaskAdapter
 import com.darksunTechnologies.justdoit.viewmodel.TaskViewModel
 import com.google.android.material.snackbar.Snackbar
-import it.xabaras.android.recyclerview.swipedecorator.RecyclerViewSwipeDecorator
-
 import androidx.recyclerview.widget.ConcatAdapter
 import com.darksunTechnologies.justdoit.adapters.SectionHeaderAdapter
 

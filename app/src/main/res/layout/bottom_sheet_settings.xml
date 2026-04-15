@@ -5,7 +5,7 @@
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:padding="24dp"
-    android:background="@android:color/white">
+    android:background="?attr/colorSurface">
 
     <!-- Handle bar -->
     <View
@@ -13,7 +13,7 @@
         android:layout_height="4dp"
         android:layout_gravity="center_horizontal"
         android:layout_marginBottom="24dp"
-        android:background="#E0E0E0" />
+        android:background="@color/handle_bar" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -49,7 +49,7 @@
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:src="@android:drawable/ic_menu_delete"
-            app:tint="#F44336" />
+            app:tint="@color/icon_tint_danger" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -57,13 +57,13 @@
             android:layout_marginStart="16dp"
             android:text="Empty Task List"
             android:textSize="16sp"
-            android:textColor="#F44336" />
+            android:textColor="@color/text_danger" />
     </LinearLayout>
 
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:background="#F0F0F0"
+        android:background="@color/divider_settings"
         android:layout_marginVertical="8dp" />
 
     <!-- Data Management Category -->
@@ -93,7 +93,7 @@
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:src="@android:drawable/ic_menu_save"
-            app:tint="@android:color/black" />
+            app:tint="@color/icon_tint" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -119,7 +119,7 @@
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:src="@android:drawable/ic_menu_revert"
-            app:tint="@android:color/black" />
+            app:tint="@color/icon_tint" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -132,7 +132,7 @@
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:background="#F0F0F0"
+        android:background="@color/divider_settings"
         android:layout_marginVertical="8dp" />
 
     <!-- Information Category -->
@@ -162,13 +162,39 @@
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:src="@android:drawable/ic_menu_info_details"
-            app:tint="@android:color/black" />
+            app:tint="@color/icon_tint" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
             android:text="About Just Do It"
+            android:textSize="16sp" />
+    </LinearLayout>
+
+    <!-- Theme -->
+    <LinearLayout
+        android:id="@+id/btnTheme"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingVertical="12dp"
+        android:background="?attr/selectableItemBackground"
+        android:clickable="true"
+        android:focusable="true">
+
+        <ImageView
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@android:drawable/ic_menu_view"
+            app:tint="@color/icon_tint" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:text="Theme"
             android:textSize="16sp" />
     </LinearLayout>
 
