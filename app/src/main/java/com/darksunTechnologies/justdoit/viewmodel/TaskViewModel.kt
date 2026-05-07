@@ -108,22 +108,41 @@ class TaskViewModel(application: Application): AndroidViewModel(application) {
     }
 
     fun undoDelete() {
-        recentlyDeletedTask?.let {
+        recentlyDeletedTask?.let { task ->
             viewModelScope.launch {
-                repository.insertTask(it)
+                repository.insertTask(task)
+                if (task.hasReminder) {
+                    AlarmHelper.scheduleReminder(getApplication(), task)
+                }
+                if (task.hasLocationReminder) {
+                    GeofenceManager.addGeofence(getApplication(), task)
+                }
             }
         }
     }
 
     fun clearAll() = viewModelScope.launch {
-        recentlyDeletedTasks = tasks.value.orEmpty()
+        val listToClear = tasks.value.orEmpty()
+        recentlyDeletedTasks = listToClear
+        listToClear.forEach { task ->
+            AlarmHelper.cancelReminder(getApplication(), task.id)
+            GeofenceManager.removeGeofence(getApplication(), task.id)
+        }
         repository.deleteAll()
     }
 
     fun undoDeleteAll() {
         recentlyDeletedTasks?.let { list ->
             viewModelScope.launch {
-                list.forEach { repository.insertTask(it) }
+                list.forEach { task -> 
+                    repository.insertTask(task)
+                    if (task.hasReminder) {
+                        AlarmHelper.scheduleReminder(getApplication(), task)
+                    }
+                    if (task.hasLocationReminder) {
+                        GeofenceManager.addGeofence(getApplication(), task)
+                    }
+                }
             }
         }
     }

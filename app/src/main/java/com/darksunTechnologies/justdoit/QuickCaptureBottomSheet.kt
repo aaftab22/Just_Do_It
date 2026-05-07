@@ -1,20 +1,24 @@
 package com.darksunTechnologies.justdoit
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.activityViewModels
-import androidx.activity.result.contract.ActivityResultContracts
-import android.Manifest
-import android.content.pm.PackageManager
-import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
 import com.darksunTechnologies.justdoit.databinding.BottomSheetQuickCaptureBinding
 import com.darksunTechnologies.justdoit.models.Task
+import com.darksunTechnologies.justdoit.notifications.AiQuickCaptureParser
+import com.darksunTechnologies.justdoit.notifications.AlarmHelper
 import com.darksunTechnologies.justdoit.viewmodel.TaskViewModel
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import kotlinx.coroutines.launch
 
 /**
  * Quick Capture bottom sheet specialized for Tasks.

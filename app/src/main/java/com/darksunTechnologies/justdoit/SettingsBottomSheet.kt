@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import com.darksunTechnologies.justdoit.databinding.BottomSheetSettingsBinding
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import com.darksunTechnologies.justdoit.datastore.ThemePreferences
 
 /**
  * SettingsBottomSheet providing a premium, icon-driven interface for global actions.
@@ -18,7 +19,7 @@ class SettingsBottomSheet(
     private val binding get() = _binding!!
 
     enum class Action {
-        DELETE_ALL, BACKUP, RESTORE, ABOUT, THEME
+        DELETE_ALL, BACKUP, RESTORE, ABOUT, THEME, TOGGLE_SMART_CAPTURE
     }
 
     override fun onCreateView(
@@ -55,6 +56,12 @@ class SettingsBottomSheet(
 
         binding.btnTheme.setOnClickListener {
             onAction(Action.THEME)
+            dismiss()
+        }
+
+        binding.switchSmartCapture.isChecked = ThemePreferences.isSmartCaptureEnabled(requireContext())
+        binding.btnSmartCapture.setOnClickListener {
+            onAction(Action.TOGGLE_SMART_CAPTURE)
             dismiss()
         }
     }

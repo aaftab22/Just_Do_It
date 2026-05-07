@@ -26,6 +26,14 @@ class ReminderReceiver: BroadcastReceiver() {
         val tapIntent = Intent(context, TaskDetailActivity::class.java).apply {
             putExtra("task_id", taskId)
             putExtra("task_name", taskName)
+            putExtra("task_description", intent?.getStringExtra("task_description"))
+            putExtra("task_priority", intent?.getBooleanExtra("task_priority", false) ?: false)
+            putExtra("task_completed", intent?.getBooleanExtra("task_completed", false) ?: false)
+            putExtra("task_due_date", intent?.getLongExtra("task_due_date", -1L) ?: -1L)
+            putExtra("task_has_reminder", intent?.getBooleanExtra("task_has_reminder", false) ?: false)
+            putExtra("task_created_at", intent?.getLongExtra("task_created_at", System.currentTimeMillis()) ?: System.currentTimeMillis())
+            putExtra("task_source", intent?.getStringExtra("task_source"))
+            putExtra("task_repeat_type", intent?.getStringExtra("task_repeat_type"))
             putExtra("start_in_edit_mode", false)
         }
 

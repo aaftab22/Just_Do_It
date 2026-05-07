@@ -12,6 +12,7 @@ class SectionHeaderAdapter(
     private val title: String,
     private var count: Int,
     private var isExpanded: Boolean = true,
+    private val onClearAll: (() -> Unit)? = null,
     private val onToggle: (Boolean) -> Unit
 ) : RecyclerView.Adapter<SectionHeaderAdapter.HeaderVH>() {
 
@@ -19,6 +20,7 @@ class SectionHeaderAdapter(
         val tvTitle: TextView = itemView.findViewById(R.id.tvSectionTitle)
         val tvCount: TextView = itemView.findViewById(R.id.tvSectionCount)
         val ivArrow: ImageView = itemView.findViewById(R.id.ivExpandArrow)
+        val tvClearAll: TextView = itemView.findViewById(R.id.tvClearAll)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): HeaderVH {

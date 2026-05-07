@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -24,6 +25,8 @@ class TaskListFragment : Fragment() {
     private val viewModel: TaskViewModel by activityViewModels()
     
     // Adapters
+    private lateinit var inboxHeader: SectionHeaderAdapter
+    private lateinit var inboxAdapter: TaskAdapter
     private lateinit var overdueHeader: SectionHeaderAdapter
     private lateinit var overdueAdapter: TaskAdapter
     private lateinit var activeHeader: SectionHeaderAdapter
@@ -112,6 +115,7 @@ class TaskListFragment : Fragment() {
             val intent = Intent(requireContext(), TaskDetailActivity::class.java).apply {
                 putExtra("task_id", task.id)
                 putExtra("task_name", task.name)
+                putExtra("task_description", task.description)
                 putExtra("task_priority", task.isHighPriority)
                 putExtra("task_completed", task.isCompleted)
                 putExtra("task_due_date", task.dueDate ?: -1L)

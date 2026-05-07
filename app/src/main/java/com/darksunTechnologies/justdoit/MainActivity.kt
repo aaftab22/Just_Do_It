@@ -6,6 +6,7 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
+import android.content.res.ColorStateList
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.addCallback
@@ -17,11 +18,15 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.widget.addTextChangedListener
+import androidx.lifecycle.lifecycleScope
 import com.darksunTechnologies.justdoit.databinding.ActivityMainBinding
 import com.darksunTechnologies.justdoit.datastore.ThemePreferences
+import com.darksunTechnologies.justdoit.notifications.GeminiNanoManager
 import com.darksunTechnologies.justdoit.viewmodel.TaskViewModel
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
@@ -90,6 +95,7 @@ class MainActivity : AppCompatActivity() {
                         val intent = Intent(this, TaskDetailActivity::class.java).apply {
                             putExtra("task_id", task.id)
                             putExtra("task_name", task.name)
+                            putExtra("task_description", task.description)
                             putExtra("task_priority", task.isHighPriority)
                             putExtra("task_completed", task.isCompleted)
                             putExtra("task_due_date", task.dueDate ?: -1L)
@@ -158,6 +164,7 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
                 SettingsBottomSheet.Action.RESTORE -> pickRestoreFileLauncher.launch(arrayOf("application/json"))
+                SettingsBottomSheet.Action.TOGGLE_SMART_CAPTURE -> handleSmartCaptureToggle()
             }
         }
         sheet.show(supportFragmentManager, SettingsBottomSheet.TAG)
@@ -263,4 +270,29 @@ class MainActivity : AppCompatActivity() {
                     .show()
             }
         }
+
+    private fun handleSmartCaptureToggle() {
+        val isCurrentlyEnabled = ThemePreferences.isSmartCaptureEnabled(this)
+        
+        if (isCurrentlyEnabled) {
+            ThemePreferences.setSmartCaptureEnabled(this, false)
+            android.widget.Toast.makeText(this, "Smart Capture Disabled", android.widget.Toast.LENGTH_SHORT).show()
+        } else {
+            val isPermissionGranted = androidx.core.app.NotificationManagerCompat.getEnabledListenerPackages(this).contains(packageName)
+            if (isPermissionGranted) {
+                ThemePreferences.setSmartCaptureEnabled(this, true)
+                android.widget.Toast.makeText(this, "Smart Capture Enabled", android.widget.Toast.LENGTH_SHORT).show()
+            } else {
+                androidx.appcompat.app.AlertDialog.Builder(this)
+                    .setTitle("Enable Smart Capture")
+                    .setMessage("This feature strictly scans incoming messages locally to automatically propose tasks like 'call John'. Your data never leaves your device.\n\nTo enable this securely, you must grant the 'Notification Access' permission on the next screen.")
+                    .setPositiveButton("Grant Access") { _, _ ->
+                        ThemePreferences.setSmartCaptureEnabled(this, true)
+                        startActivity(android.content.Intent(android.provider.Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
+                    }
+                    .setNegativeButton("Cancel", null)
+                    .show()
+            }
+        }
+    }
 }

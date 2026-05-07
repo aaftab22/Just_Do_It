@@ -77,6 +77,7 @@ dependencies {
     implementation(libs.recyclerview.swipedecorator)
 
     implementation(libs.androidx.lifecycle.livedata.ktx)
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.4")
 
     //ViewPager2 + Fragment for tabs
     implementation(libs.androidx.viewpager2)
