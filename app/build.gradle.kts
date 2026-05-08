@@ -85,4 +85,10 @@ dependencies {
 
     // Location & Geofencing
     implementation("com.google.android.gms:play-services-location:21.2.0")
+
+    // Gemini Nano (On-Device AI via AICore)
+    implementation(libs.mlkit.genai.prompt)
+
+    // WorkManager
+    implementation("androidx.work:work-runtime-ktx:2.9.0")
 }
