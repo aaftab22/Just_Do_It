@@ -40,5 +40,8 @@ data class Task(
     val longitude: Double? = null,
 
     @ColumnInfo(defaultValue = "100.0")
-    val radius: Float = 100f
+    val radius: Float = 100f,
+
+    @ColumnInfo(defaultValue = "0")
+    val needsReview: Boolean = false
 )
