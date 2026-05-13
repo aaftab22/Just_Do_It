@@ -84,6 +84,11 @@ class MainActivity : AppCompatActivity() {
 
         createNotificationChannel(this)
 
+        // Initialize Gemini Nano availability check (non-blocking, background)
+        lifecycleScope.launch(Dispatchers.IO) {
+            GeminiNanoManager.initialize(applicationContext)
+        }
+
         // Observer: show "Task saved! EDIT" Snackbar after Quick Capture
         taskViewModel.lastSavedTaskId.observe(this) { taskId ->
             if (taskId == null) return@observe
@@ -173,6 +178,8 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         shakeDetector.start()
+        // Foreground Burst: Process any queued messages using Gemini Nano
+        taskViewModel.processPendingQueue()
     }
 
     override fun onPause() {

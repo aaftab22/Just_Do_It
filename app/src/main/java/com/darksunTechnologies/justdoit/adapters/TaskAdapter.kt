@@ -79,6 +79,10 @@ class TaskAdapter(
         holder.itemView.setOnClickListener {
             onTaskClick(currTask)
         }
+
+        // AI Suggestion badge for inbox items
+        val aiBadge = holder.itemView.findViewById<TextView>(R.id.tvAiSuggestionBadge)
+        aiBadge.visibility = if (currTask.needsReview) View.VISIBLE else View.GONE
     }
 
     fun getSwipeCallback(): androidx.recyclerview.widget.ItemTouchHelper.SimpleCallback {

@@ -8,11 +8,13 @@ import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.room.TypeConverters
 import com.darksunTechnologies.justdoit.models.Task
+import com.darksunTechnologies.justdoit.models.QueuedMessage
 
-@Database(entities = [Task::class], version = 7, exportSchema = false)
+@Database(entities = [Task::class, QueuedMessage::class], version = 9, exportSchema = false)
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun taskDao(): TaskDao
+    abstract fun queuedMessageDao(): QueuedMessageDao
 
     companion object {
         @Volatile
@@ -63,6 +65,27 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_7_8 = object : Migration(7, 8) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("""
+                    CREATE TABLE IF NOT EXISTS `queued_messages` (
+                        `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, 
+                        `sourcePackage` TEXT NOT NULL, 
+                        `rawText` TEXT NOT NULL, 
+                        `timestamp` INTEGER NOT NULL
+                    )
+                """.trimIndent())
+                db.execSQL("ALTER TABLE tasks ADD COLUMN needsReview INTEGER NOT NULL DEFAULT 0")
+            }
+        }
+
+        private val MIGRATION_8_9 = object : Migration(8, 9) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE queued_messages ADD COLUMN status TEXT NOT NULL DEFAULT 'PENDING'")
+                db.execSQL("ALTER TABLE queued_messages ADD COLUMN senderTitle TEXT NOT NULL DEFAULT ''")
+            }
+        }
+
         fun getInstance(context: Context): AppDatabase {
             return INSTANCE ?: synchronized(this) {
                 INSTANCE ?: Room.databaseBuilder(
@@ -70,7 +93,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "justdoit.db"
                 )
-                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7)
+                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9)
                     .fallbackToDestructiveMigrationOnDowngrade()
                     .build().also { INSTANCE = it }
             }

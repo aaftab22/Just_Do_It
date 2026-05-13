@@ -34,6 +34,16 @@ class SectionHeaderAdapter(
         holder.tvCount.text = "$count"
         holder.ivArrow.rotation = if (isExpanded) 0f else -90f
 
+        if (onClearAll != null && count > 0) {
+            holder.tvClearAll.visibility = View.VISIBLE
+            holder.tvClearAll.setOnClickListener {
+                onClearAll.invoke()
+            }
+        } else {
+            holder.tvClearAll.visibility = View.GONE
+            holder.tvClearAll.setOnClickListener(null)
+        }
+
         holder.itemView.setOnClickListener {
             isExpanded = !isExpanded
             holder.ivArrow.animate().rotation(if (isExpanded) 0f else -90f).setDuration(200).start()

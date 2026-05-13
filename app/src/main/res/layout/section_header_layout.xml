@@ -34,4 +34,17 @@
         android:textSize="12sp"
         android:textColor="@color/text_sec"
         android:layout_marginStart="8dp"/>
+
+    <TextView
+        android:id="@+id/tvClearAll"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="12sp"
+        android:textColor="@color/icon_tint_danger"
+        android:text="Clear All"
+        android:visibility="gone"
+        android:paddingHorizontal="12dp"
+        android:paddingVertical="4dp"
+        />
+
 </LinearLayout>
