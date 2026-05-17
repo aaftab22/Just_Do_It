@@ -5,7 +5,7 @@
 </p>
    
 <p align="center">
-  <img src="https://img.shields.io/badge/Kotlin-100%%-blueviolet?style=for-the-badge&logo=kotlin" alt="Kotlin">
+  <img src="https://img.shields.io/badge/Kotlin-100%25-blueviolet?style=for-the-badge&logo=kotlin" alt="Kotlin">
   <img src="https://img.shields.io/badge/Android-MVVM-green?style=for-the-badge&logo=android" alt="Android MVVM">
   <img src="https://img.shields.io/badge/AI-Gemini%20Nano-orange?style=for-the-badge" alt="Gemini Nano">
   <img src="https://img.shields.io/badge/Offline-100%25_Private-success?style=for-the-badge" alt="100% Private">
