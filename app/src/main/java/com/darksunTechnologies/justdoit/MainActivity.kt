@@ -21,7 +21,7 @@ import androidx.core.widget.addTextChangedListener
 import androidx.lifecycle.lifecycleScope
 import com.darksunTechnologies.justdoit.databinding.ActivityMainBinding
 import com.darksunTechnologies.justdoit.datastore.ThemePreferences
-import com.darksunTechnologies.justdoit.notifications.GeminiNanoManager
+import com.darksunTechnologies.justdoit.ai.GeminiNanoManager
 import com.darksunTechnologies.justdoit.viewmodel.TaskViewModel
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.snackbar.Snackbar

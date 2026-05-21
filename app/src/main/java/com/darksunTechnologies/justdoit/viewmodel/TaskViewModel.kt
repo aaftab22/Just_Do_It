@@ -11,8 +11,8 @@ import androidx.lifecycle.viewModelScope
 import com.darksunTechnologies.justdoit.database.AppDatabase
 import com.darksunTechnologies.justdoit.database.TaskRepository
 import com.darksunTechnologies.justdoit.models.Task
-import com.darksunTechnologies.justdoit.notifications.AlarmHelper
-import com.darksunTechnologies.justdoit.notifications.GeofenceManager
+import com.darksunTechnologies.justdoit.alarms.AlarmHelper
+import com.darksunTechnologies.justdoit.alarms.GeofenceManager
 import com.google.gson.Gson
 import kotlinx.coroutines.launch
 import androidx.core.content.edit
@@ -272,7 +272,8 @@ class TaskViewModel(application: Application): AndroidViewModel(application) {
                         }
                         val desc = "Added from $appName" +
                             (if (msg.senderTitle.isNotBlank()) " (${msg.senderTitle})" else "") +
-                            "\n[Parsed by: Offline AI 🤖]"
+                            "\n[Parsed by: Offline AI 🤖]\n\n" +
+                            "Original Message:\n\"${msg.rawText}\""
 
                         val task = com.darksunTechnologies.justdoit.models.Task(
                             name = parsed.title,

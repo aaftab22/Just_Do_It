@@ -1,4 +1,4 @@
-package com.darksunTechnologies.justdoit.notifications
+package com.darksunTechnologies.justdoit.ai
 
 import android.content.Context
 import android.util.Log

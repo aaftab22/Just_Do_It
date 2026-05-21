@@ -4,6 +4,7 @@ import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import android.app.Notification
 import android.util.Log
+import com.darksunTechnologies.justdoit.database.AppDatabase
 import com.darksunTechnologies.justdoit.datastore.ThemePreferences
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -32,6 +33,9 @@ class SmartNotificationListenerService : NotificationListenerService() {
     
     // Maps message text hashes to the time they were seen
     private val seenHashes = ConcurrentHashMap<Int, Long>()
+
+    // Lazily initialized database instance — avoids calling getInstance() per notification
+    private val db by lazy { AppDatabase.getInstance(applicationContext) }
 
     override fun onListenerConnected() {
         super.onListenerConnected()
@@ -104,7 +108,7 @@ class SmartNotificationListenerService : NotificationListenerService() {
         }
         
         // 6. Hybrid Router: Regex-first, AI-escalate if weak/null result
-        val parsedTasks = SmartParseRouter.parseText(text, packageName, title, applicationContext)
+        val parsedTasks = SmartParseRouter.parseText(text, packageName, title, applicationContext, db)
         
         if (parsedTasks.isNotEmpty()) {
             // Router successfully extracted tasks (via regex or AI)
@@ -122,7 +126,8 @@ class SmartNotificationListenerService : NotificationListenerService() {
                 }
                 val desc = "Added from $appName" + 
                     (if (title.isNotBlank()) " ($title)" else "") + 
-                    "\n[Parsed by: ${if (parsedTask.parserSource == "offline_ai") "Offline AI 🤖" else "Regex ⚡"}]"
+                    "\n[Parsed by: ${if (parsedTask.parserSource == "offline_ai") "Offline AI 🤖" else "Regex ⚡"}]\n\n" +
+                    "Original Message:\n\"$text\""
 
                 // Pop the suggestion
                 NotificationHelper.showTaskSuggestionNotification(applicationContext, notificationIdReference, parsedTask, desc)

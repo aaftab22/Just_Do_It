@@ -11,11 +11,6 @@ import com.darksunTechnologies.justdoit.TaskDetailActivity
 
 class ReminderReceiver: BroadcastReceiver() {
 
-    companion object {
-        const val ACTION_MARK_DONE = "ACTION_MARK_DONE"
-        const val ACTION_SNOOZE = "ACTION_SNOOZE"
-    }
-
     override fun onReceive(context: Context, intent: Intent?) {
         val taskId = intent?.getIntExtra("task_id", -1) ?: -1
         val taskName = intent?.getStringExtra("task_name") ?: "Task Reminder"
@@ -42,9 +37,9 @@ class ReminderReceiver: BroadcastReceiver() {
             getPendingIntent(taskId, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
         }
 
-        // --- Mark Done action button ---
-        val doneIntent = Intent(context, NotificationActionReceiver::class.java).apply {
-            action = ACTION_MARK_DONE
+        // --- Mark Done action button → unified TaskActionReceiver ---
+        val doneIntent = Intent(context, TaskActionReceiver::class.java).apply {
+            action = TaskActionReceiver.ACTION_MARK_DONE
             putExtra("task_id", taskId)
         }
         val pendingDoneIntent = PendingIntent.getBroadcast(
@@ -54,9 +49,9 @@ class ReminderReceiver: BroadcastReceiver() {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        // --- Snooze action button ---
-        val snoozeIntent = Intent(context, NotificationActionReceiver::class.java).apply {
-            action = ACTION_SNOOZE
+        // --- Snooze action button → unified TaskActionReceiver ---
+        val snoozeIntent = Intent(context, TaskActionReceiver::class.java).apply {
+            action = TaskActionReceiver.ACTION_SNOOZE_TASK
             putExtra("task_id", taskId)
         }
         val pendingSnoozeIntent = PendingIntent.getBroadcast(

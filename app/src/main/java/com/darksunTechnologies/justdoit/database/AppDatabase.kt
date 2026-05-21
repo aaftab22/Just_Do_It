@@ -9,12 +9,14 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.room.TypeConverters
 import com.darksunTechnologies.justdoit.models.Task
 import com.darksunTechnologies.justdoit.models.QueuedMessage
+import com.darksunTechnologies.justdoit.models.RouterLog
 
-@Database(entities = [Task::class, QueuedMessage::class], version = 9, exportSchema = false)
+@Database(entities = [Task::class, QueuedMessage::class, RouterLog::class], version = 10, exportSchema = false)
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun taskDao(): TaskDao
     abstract fun queuedMessageDao(): QueuedMessageDao
+    abstract fun routerLogDao(): RouterLogDao
 
     companion object {
         @Volatile
@@ -86,6 +88,24 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_9_10 = object : Migration(9, 10) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("""
+                    CREATE TABLE IF NOT EXISTS `router_logs` (
+                        `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        `timestamp` INTEGER NOT NULL,
+                        `packageName` TEXT NOT NULL,
+                        `sender` TEXT DEFAULT NULL,
+                        `message` TEXT NOT NULL,
+                        `decision` TEXT NOT NULL,
+                        `score` INTEGER NOT NULL DEFAULT 0,
+                        `reason` TEXT DEFAULT NULL,
+                        `source` TEXT NOT NULL
+                    )
+                """.trimIndent())
+            }
+        }
+
         fun getInstance(context: Context): AppDatabase {
             return INSTANCE ?: synchronized(this) {
                 INSTANCE ?: Room.databaseBuilder(
@@ -93,7 +113,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "justdoit.db"
                 )
-                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9)
+                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10)
                     .fallbackToDestructiveMigrationOnDowngrade()
                     .build().also { INSTANCE = it }
             }

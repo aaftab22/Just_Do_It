@@ -2,7 +2,7 @@ package com.darksunTechnologies.justdoit.database
 
 import com.darksunTechnologies.justdoit.models.Task
 import com.darksunTechnologies.justdoit.models.RepeatType
-import com.darksunTechnologies.justdoit.notifications.RecurringManager
+import com.darksunTechnologies.justdoit.utils.RecurringManager
 import kotlinx.coroutines.flow.Flow
 
 class TaskRepository (private val dao: TaskDao) {

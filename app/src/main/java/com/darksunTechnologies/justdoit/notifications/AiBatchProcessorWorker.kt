@@ -1,5 +1,6 @@
 package com.darksunTechnologies.justdoit.notifications
 
+import com.darksunTechnologies.justdoit.ai.GeminiNanoManager
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
@@ -11,7 +12,6 @@ import androidx.work.WorkerParameters
 import com.darksunTechnologies.justdoit.R
 import com.darksunTechnologies.justdoit.database.AppDatabase
 import com.darksunTechnologies.justdoit.models.Task
-
 class AiBatchProcessorWorker(
     appContext: Context,
     workerParams: WorkerParameters
@@ -69,7 +69,8 @@ class AiBatchProcessorWorker(
                         }
                         val desc = "Added from $appName" +
                             (if (msg.senderTitle.isNotBlank()) " (${msg.senderTitle})" else "") +
-                            "\n[Parsed by: Offline AI 🤖]"
+                            "\n[Parsed by: Offline AI 🤖]\n\n" +
+                            "Original Message:\n\"${msg.rawText}\""
 
                         val task = Task(
                             name = parsed.title,

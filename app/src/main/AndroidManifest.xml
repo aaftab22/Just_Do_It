@@ -62,11 +62,7 @@
         </receiver>
 
         <receiver
-            android:name=".notifications.NotificationActionReceiver"
-            android:exported="false" />
-
-        <receiver
-            android:name=".notifications.GeofenceBroadcastReceiver"
+            android:name=".alarms.GeofenceBroadcastReceiver"
             android:enabled="true"
             android:exported="true">
             <intent-filter>
@@ -75,11 +71,7 @@
         </receiver>
 
         <receiver
-            android:name=".notifications.SmartCaptureActionReceiver"
-            android:exported="false" />
-
-        <receiver
-            android:name=".notifications.BatchNotificationReceiver"
+            android:name=".notifications.TaskActionReceiver"
             android:exported="false" />
 
         <service

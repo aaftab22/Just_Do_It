@@ -1,5 +1,8 @@
-package com.darksunTechnologies.justdoit.notifications
+package com.darksunTechnologies.justdoit.parsers
 
+import com.darksunTechnologies.justdoit.ai.GeminiNanoManager
+import com.darksunTechnologies.justdoit.notifications.AiTaskExtractor
+import com.darksunTechnologies.justdoit.notifications.ParsedTask
 import android.util.Log
 
 /**

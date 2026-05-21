@@ -1,4 +1,4 @@
-package com.darksunTechnologies.justdoit.notifications
+package com.darksunTechnologies.justdoit.utils
 
 import com.darksunTechnologies.justdoit.models.RepeatType
 import java.util.Calendar

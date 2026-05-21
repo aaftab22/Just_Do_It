@@ -15,8 +15,8 @@ import androidx.core.view.WindowInsetsCompat
 import com.darksunTechnologies.justdoit.databinding.ActivityTaskDetailBinding
 import com.darksunTechnologies.justdoit.models.RepeatType
 import com.darksunTechnologies.justdoit.models.Task
-import com.darksunTechnologies.justdoit.notifications.AlarmHelper
-import com.darksunTechnologies.justdoit.notifications.GeofenceManager
+import com.darksunTechnologies.justdoit.alarms.AlarmHelper
+import com.darksunTechnologies.justdoit.alarms.GeofenceManager
 import com.darksunTechnologies.justdoit.viewmodel.TaskViewModel
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.timepicker.MaterialTimePicker

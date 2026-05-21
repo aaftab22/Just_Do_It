@@ -1,4 +1,4 @@
-package com.darksunTechnologies.justdoit.notifications
+package com.darksunTechnologies.justdoit.alarms
 
 import android.annotation.SuppressLint
 import android.app.PendingIntent

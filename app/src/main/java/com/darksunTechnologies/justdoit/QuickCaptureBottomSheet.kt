@@ -14,8 +14,8 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import com.darksunTechnologies.justdoit.databinding.BottomSheetQuickCaptureBinding
 import com.darksunTechnologies.justdoit.models.Task
-import com.darksunTechnologies.justdoit.notifications.AiQuickCaptureParser
-import com.darksunTechnologies.justdoit.notifications.AlarmHelper
+import com.darksunTechnologies.justdoit.parsers.AiQuickCaptureParser
+import com.darksunTechnologies.justdoit.alarms.AlarmHelper
 import com.darksunTechnologies.justdoit.viewmodel.TaskViewModel
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import kotlinx.coroutines.launch

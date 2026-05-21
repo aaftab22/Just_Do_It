@@ -1,5 +1,6 @@
 package com.darksunTechnologies.justdoit.notifications
 
+import com.darksunTechnologies.justdoit.ai.GeminiNanoManager
 import android.util.Log
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
@@ -47,7 +48,7 @@ Rules:
 - Determine if the input is an actionable task for the RECIPIENT.
 - NOT a task: questions, sender-statements ("I will...", "I have to..."), shipping updates, OTP codes, ads, promotions, calls, greetings.
 - If it IS a task, extract a clean title (action phrase only, no sender names).
-- ONLY add a date or time if it is EXPLICITLY stated in the text. If no date or time is clearly mentioned, you MUST set "date" and "time" to null. DO NOT guess, DO NOT assume today's date.
+- ONLY add a date or time if it is EXPLICITLY stated in the text. Treat "aaj" as today and "kal" as tomorrow. If no date or time is clearly mentioned, you MUST set "date" and "time" to null. DO NOT guess, DO NOT assume today's date.
 - Split multiple tasks into separate objects in the 'tasks' array (e.g. "Buy milk and call John" -> 2 objects).
 - Apply shared dates to all tasks in the same sentence if applicable.
 - Time mappings: morning=09:00, afternoon=14:00, evening=18:00, night=21:00.

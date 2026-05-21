@@ -26,9 +26,9 @@ object NotificationHelper {
     fun showTaskSuggestionNotification(context: Context, taskIdRef: Int, parsedTask: ParsedTask, description: String) {
         createSmartChannel(context) // Ensure channel exists
         
-        // Build intents
-        val addIntent = Intent(context, SmartCaptureActionReceiver::class.java).apply {
-            action = SmartCaptureActionReceiver.ACTION_ADD_TASK
+        // Build intents → all point to the unified TaskActionReceiver
+        val addIntent = Intent(context, TaskActionReceiver::class.java).apply {
+            action = TaskActionReceiver.ACTION_ADD_TASK
             putExtra("task_title", parsedTask.title)
             putExtra("task_description", description)
             putExtra("task_due_date", parsedTask.dueDateMillis ?: -1L)
@@ -42,8 +42,8 @@ object NotificationHelper {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        val ignoreIntent = Intent(context, SmartCaptureActionReceiver::class.java).apply {
-            action = SmartCaptureActionReceiver.ACTION_IGNORE
+        val ignoreIntent = Intent(context, TaskActionReceiver::class.java).apply {
+            action = TaskActionReceiver.ACTION_IGNORE
             putExtra("notification_id", taskIdRef)
         }
         val pIgnore = PendingIntent.getBroadcast(
@@ -96,18 +96,18 @@ object NotificationHelper {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        // Snooze action
-        val snoozeIntent = Intent(context, BatchNotificationReceiver::class.java).apply {
-            action = BatchNotificationReceiver.ACTION_SNOOZE
+        // Snooze action → unified TaskActionReceiver
+        val snoozeIntent = Intent(context, TaskActionReceiver::class.java).apply {
+            action = TaskActionReceiver.ACTION_BATCH_SNOOZE
         }
         val pSnooze = PendingIntent.getBroadcast(
             context, 1, snoozeIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        // Silence for today action
-        val silenceIntent = Intent(context, BatchNotificationReceiver::class.java).apply {
-            action = BatchNotificationReceiver.ACTION_SILENCE_TODAY
+        // Silence for today action → unified TaskActionReceiver
+        val silenceIntent = Intent(context, TaskActionReceiver::class.java).apply {
+            action = TaskActionReceiver.ACTION_BATCH_SILENCE
         }
         val pSilence = PendingIntent.getBroadcast(
             context, 2, silenceIntent,
@@ -121,15 +121,15 @@ object NotificationHelper {
             .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setContentTitle("Smart Capture Queue")
             .setContentText(text)
-            .setStyle(NotificationCompat.BigTextStyle().bigText("$text\nOpen the app to process with AI, or tap Snooze."))
+            .setStyle(NotificationCompat.BigTextStyle().bigText("$text\nOpen the app to process with AI, or tap Snooze 1 Hour."))
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .setOngoing(false)
             .setAutoCancel(true)
             .setContentIntent(pTap)
-            .addAction(0, "Snooze", pSnooze)
+            .addAction(0, "Snooze 1 Hour", pSnooze)
             .addAction(0, "Silence for Today", pSilence)
 
         val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        manager.notify(BatchNotificationReceiver.BATCH_NOTIFICATION_ID, builder.build())
+        manager.notify(TaskActionReceiver.BATCH_NOTIFICATION_ID, builder.build())
     }
 }
