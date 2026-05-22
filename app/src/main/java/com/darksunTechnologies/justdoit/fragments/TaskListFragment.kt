@@ -180,7 +180,7 @@ class TaskListFragment : Fragment() {
 
         val onTaskToggle: (com.darksunTechnologies.justdoit.models.Task) -> Unit = { task ->
             viewModel.toggleComplete(task)
-            val msg = if (task.isCompleted) "Task reactivated" else "Task completed \u2713"
+            val msg = if (task.isCompleted) "Task reactivated" else "Task completed ✓"
             Snackbar.make(requireView(), msg, Snackbar.LENGTH_SHORT).show()
         }
 
@@ -214,18 +214,75 @@ class TaskListFragment : Fragment() {
             completedAdapter.submitList(if (expanded) currentCompletedTasks else emptyList())
         }
 
-        // Attach Swipe
-        ItemTouchHelper(inboxAdapter.getSwipeCallback()).attachToRecyclerView(recyclerView)
-        ItemTouchHelper(overdueAdapter.getSwipeCallback()).attachToRecyclerView(recyclerView)
-        ItemTouchHelper(activeAdapter.getSwipeCallback()).attachToRecyclerView(recyclerView)
-        ItemTouchHelper(completedAdapter.getSwipeCallback()).attachToRecyclerView(recyclerView)
-
-        recyclerView.adapter = ConcatAdapter(
+        val concatAdapter = ConcatAdapter(
             inboxHeader, inboxAdapter,
             overdueHeader, overdueAdapter,
             activeHeader, activeAdapter,
             completedHeader, completedAdapter
         )
+        recyclerView.adapter = concatAdapter
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
+
+        // Single unified swipe helper — resolves sub-adapter at runtime via ViewHolder type
+        val swipeCallback = object : ItemTouchHelper.SimpleCallback(
+            0, ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT
+        ) {
+            override fun onMove(rv: RecyclerView, vh: RecyclerView.ViewHolder, t: RecyclerView.ViewHolder) = false
+
+            // Block swipes on section header rows using ViewHolder type
+            override fun getSwipeDirs(rv: RecyclerView, vh: RecyclerView.ViewHolder): Int {
+                if (vh !is TaskAdapter.TaskViewHolder) return 0
+                return super.getSwipeDirs(rv, vh)
+            }
+
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                // absoluteAdapterPosition gives the GLOBAL position across the entire ConcatAdapter
+                val globalPos = viewHolder.absoluteAdapterPosition
+                if (globalPos == RecyclerView.NO_POSITION) return
+
+                val pair = concatAdapter.getWrappedAdapterAndPosition(globalPos)
+                val wrappedAdapter = pair.first as? TaskAdapter ?: return
+                val localPos = pair.second
+                if (localPos < 0 || localPos >= wrappedAdapter.currentList.size) return
+
+                val task = wrappedAdapter.currentList[localPos]
+
+                // Reset the item's swiped state visually IMMEDIATELY so the red/green bar disappears.
+                // The underlying LiveData/DiffUtil will animate the real add/remove shortly after.
+                wrappedAdapter.notifyItemChanged(localPos)
+
+                // Fire the action
+                if (direction == ItemTouchHelper.LEFT) {
+                    onTaskDelete(task)
+                } else {
+                    if (wrappedAdapter === inboxAdapter) {
+                        onInboxAccept(task)
+                    } else {
+                        onTaskToggle(task)
+                    }
+                }
+            }
+
+            override fun onChildDraw(
+                c: android.graphics.Canvas, rv: RecyclerView, vh: RecyclerView.ViewHolder,
+                dX: Float, dY: Float, actionState: Int, active: Boolean
+            ) {
+                it.xabaras.android.recyclerview.swipedecorator.RecyclerViewSwipeDecorator.Builder(
+                    c, rv, vh, dX, dY, actionState, active
+                )
+                    .addSwipeLeftBackgroundColor(android.graphics.Color.parseColor("#EF4444"))
+                    .addSwipeLeftActionIcon(R.drawable.delete)
+                    .setSwipeLeftActionIconTint(android.graphics.Color.WHITE)
+                    .addSwipeLeftCornerRadius(1, 12f)
+                    .addSwipeRightBackgroundColor(android.graphics.Color.parseColor("#22C55E"))
+                    .addSwipeRightActionIcon(R.drawable.ic_check)
+                    .setSwipeRightActionIconTint(android.graphics.Color.WHITE)
+                    .addSwipeRightCornerRadius(1, 12f)
+                    .create()
+                    .decorate()
+                super.onChildDraw(c, rv, vh, dX, dY, actionState, active)
+            }
+        }
+        ItemTouchHelper(swipeCallback).attachToRecyclerView(recyclerView)
     }
 }
