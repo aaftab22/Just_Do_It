@@ -12,6 +12,7 @@ object ThemePreferences {
 
     private const val PREFS_NAME = "theme_prefs"
     private const val KEY_THEME_MODE = "theme_mode"
+    private const val KEY_SMART_CAPTURE = "smart_capture_enabled"
 
     const val MODE_SYSTEM = 0
     const val MODE_LIGHT = 1
@@ -27,6 +28,14 @@ object ThemePreferences {
 
     fun saveThemeMode(context: Context, mode: Int) {
         getPrefs(context).edit().putInt(KEY_THEME_MODE, mode).apply()
+    }
+
+    fun isSmartCaptureEnabled(context: Context): Boolean {
+        return getPrefs(context).getBoolean(KEY_SMART_CAPTURE, false)
+    }
+
+    fun setSmartCaptureEnabled(context: Context, enabled: Boolean) {
+        getPrefs(context).edit().putBoolean(KEY_SMART_CAPTURE, enabled).apply()
     }
 
     /**

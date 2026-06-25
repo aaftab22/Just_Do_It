@@ -62,17 +62,27 @@
         </receiver>
 
         <receiver
-            android:name=".notifications.NotificationActionReceiver"
-            android:exported="false" />
-
-        <receiver
-            android:name=".notifications.GeofenceBroadcastReceiver"
+            android:name=".alarms.GeofenceBroadcastReceiver"
             android:enabled="true"
             android:exported="true">
             <intent-filter>
                 <action android:name="com.darksunTechnologies.justdoit.ACTION_GEOFENCE_EVENT" />
             </intent-filter>
         </receiver>
+
+        <receiver
+            android:name=".notifications.TaskActionReceiver"
+            android:exported="false" />
+
+        <service
+            android:name=".notifications.SmartNotificationListenerService"
+            android:label="Just Do It Smart Capture"
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService" />
+            </intent-filter>
+        </service>
 
     </application>
 

@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -24,6 +25,8 @@ class TaskListFragment : Fragment() {
     private val viewModel: TaskViewModel by activityViewModels()
     
     // Adapters
+    private lateinit var inboxHeader: SectionHeaderAdapter
+    private lateinit var inboxAdapter: TaskAdapter
     private lateinit var overdueHeader: SectionHeaderAdapter
     private lateinit var overdueAdapter: TaskAdapter
     private lateinit var activeHeader: SectionHeaderAdapter
@@ -32,11 +35,13 @@ class TaskListFragment : Fragment() {
     private lateinit var completedAdapter: TaskAdapter
     
     // Expansion State
+    private var inboxExpanded = true
     private var overdueExpanded = true
     private var activeExpanded = true
     private var completedExpanded = false
 
     // Cached Lists
+    private var currentInboxTasks: List<com.darksunTechnologies.justdoit.models.Task> = emptyList()
     private var currentOverdueTasks: List<com.darksunTechnologies.justdoit.models.Task> = emptyList()
     private var currentActiveTasks: List<com.darksunTechnologies.justdoit.models.Task> = emptyList()
     private var currentCompletedTasks: List<com.darksunTechnologies.justdoit.models.Task> = emptyList()
@@ -76,27 +81,69 @@ class TaskListFragment : Fragment() {
 
         val recyclerView = view.findViewById<RecyclerView>(R.id.tasksRV)
         val emptyState = view.findViewById<View>(R.id.emptyState)
+        
+        // New full screen processing overlay
+        val processingOverlay = view.findViewById<View>(R.id.processingOverlay)
+        val tvProcessingProgress = view.findViewById<TextView>(R.id.tvProcessingProgress)
+        val btnContinueInBackground = view.findViewById<View>(R.id.btnContinueInBackground)
 
         setupAdapters(recyclerView)
+
+        // Allow the user to hide the overlay and continue using the app
+        var isOverlayDismissedByUser = false
+        btnContinueInBackground.setOnClickListener {
+            isOverlayDismissedByUser = true
+            processingOverlay.visibility = View.GONE
+        }
+
+        // Observe AI processing state for the overlay
+        viewModel.isProcessingQueue.observe(viewLifecycleOwner) { isProcessing ->
+            if (isProcessing == true && !isOverlayDismissedByUser) {
+                processingOverlay.visibility = View.VISIBLE
+            } else {
+                processingOverlay.visibility = View.GONE
+                if (isProcessing == false) {
+                    isOverlayDismissedByUser = false // reset when done
+                }
+            }
+            // Restore normal padding since we removed the banner
+            recyclerView.setPadding(
+                recyclerView.paddingLeft,
+                0,
+                recyclerView.paddingRight,
+                recyclerView.paddingBottom
+            )
+        }
+        
+        // Observe progress updates
+        viewModel.processingProgress.observe(viewLifecycleOwner) { progress ->
+            val current = progress.first
+            val total = progress.second
+            tvProcessingProgress.text = "Processing message $current of $total"
+        }
 
         viewModel.tasks.observe(viewLifecycleOwner) { allTasks ->
             val now = System.currentTimeMillis()
 
             // 1. Split and Sort
-            currentOverdueTasks = allTasks.filter { !it.isCompleted && it.dueDate != null && it.dueDate < now }
+            currentInboxTasks = allTasks.filter { it.needsReview && !it.isCompleted }
+            
+            currentOverdueTasks = allTasks.filter { !it.needsReview && !it.isCompleted && it.dueDate != null && it.dueDate < now }
                 .sortedBy { it.dueDate }
             
-            currentActiveTasks = allTasks.filter { !it.isCompleted && (it.dueDate == null || it.dueDate >= now) }
+            currentActiveTasks = allTasks.filter { !it.needsReview && !it.isCompleted && (it.dueDate == null || it.dueDate >= now) }
                 .sortedBy { it.dueDate ?: Long.MAX_VALUE }
             
-            currentCompletedTasks = allTasks.filter { it.isCompleted }
+            currentCompletedTasks = allTasks.filter { !it.needsReview && it.isCompleted }
 
             // 2. Update Headers
+            inboxHeader.updateCount(currentInboxTasks.size)
             overdueHeader.updateCount(currentOverdueTasks.size)
             activeHeader.updateCount(currentActiveTasks.size)
             completedHeader.updateCount(currentCompletedTasks.size)
 
             // 3. Submit Lists
+            inboxAdapter.submitList(if (inboxExpanded) currentInboxTasks else emptyList())
             overdueAdapter.submitList(if (overdueExpanded) currentOverdueTasks else emptyList())
             activeAdapter.submitList(if (activeExpanded) currentActiveTasks else emptyList())
             completedAdapter.submitList(if (completedExpanded) currentCompletedTasks else emptyList())
@@ -112,6 +159,7 @@ class TaskListFragment : Fragment() {
             val intent = Intent(requireContext(), TaskDetailActivity::class.java).apply {
                 putExtra("task_id", task.id)
                 putExtra("task_name", task.name)
+                putExtra("task_description", task.description)
                 putExtra("task_priority", task.isHighPriority)
                 putExtra("task_completed", task.isCompleted)
                 putExtra("task_due_date", task.dueDate ?: -1L)
@@ -132,38 +180,109 @@ class TaskListFragment : Fragment() {
 
         val onTaskToggle: (com.darksunTechnologies.justdoit.models.Task) -> Unit = { task ->
             viewModel.toggleComplete(task)
-            val msg = if (task.isCompleted) "Task reactivated" else "Task completed \u2713"
+            val msg = if (task.isCompleted) "Task reactivated" else "Task completed ✓"
             Snackbar.make(requireView(), msg, Snackbar.LENGTH_SHORT).show()
         }
 
+        val onInboxAccept: (com.darksunTechnologies.justdoit.models.Task) -> Unit = { task ->
+            viewModel.acceptSuggestedTask(task)
+            Snackbar.make(requireView(), "Task accepted", Snackbar.LENGTH_SHORT).show()
+        }
+
         // Initialize adapters
+        inboxAdapter = TaskAdapter(onTaskClick, onTaskDelete, onInboxAccept)
         overdueAdapter = TaskAdapter(onTaskClick, onTaskDelete, onTaskToggle)
         activeAdapter = TaskAdapter(onTaskClick, onTaskDelete, onTaskToggle)
         completedAdapter = TaskAdapter(onTaskClick, onTaskDelete, onTaskToggle)
 
-        overdueHeader = SectionHeaderAdapter("Overdue", 0, overdueExpanded) { expanded ->
+        inboxHeader = SectionHeaderAdapter("Suggested Tasks", 0, inboxExpanded, onClearAll = {
+            viewModel.discardAllSuggestions()
+        }) { expanded ->
+            inboxExpanded = expanded
+            inboxAdapter.submitList(if (expanded) currentInboxTasks else emptyList())
+        }
+        overdueHeader = SectionHeaderAdapter("Overdue", 0, overdueExpanded, onClearAll = null) { expanded ->
             overdueExpanded = expanded
             overdueAdapter.submitList(if (expanded) currentOverdueTasks else emptyList())
         }
-        activeHeader = SectionHeaderAdapter("Active", 0, activeExpanded) { expanded ->
+        activeHeader = SectionHeaderAdapter("Active", 0, activeExpanded, onClearAll = null) { expanded ->
             activeExpanded = expanded
             activeAdapter.submitList(if (expanded) currentActiveTasks else emptyList())
         }
-        completedHeader = SectionHeaderAdapter("Completed", 0, completedExpanded) { expanded ->
+        completedHeader = SectionHeaderAdapter("Completed", 0, completedExpanded, onClearAll = null) { expanded ->
             completedExpanded = expanded
             completedAdapter.submitList(if (expanded) currentCompletedTasks else emptyList())
         }
 
-        // Attach Swipe
-        ItemTouchHelper(overdueAdapter.getSwipeCallback()).attachToRecyclerView(recyclerView)
-        ItemTouchHelper(activeAdapter.getSwipeCallback()).attachToRecyclerView(recyclerView)
-        ItemTouchHelper(completedAdapter.getSwipeCallback()).attachToRecyclerView(recyclerView)
-
-        recyclerView.adapter = ConcatAdapter(
+        val concatAdapter = ConcatAdapter(
+            inboxHeader, inboxAdapter,
             overdueHeader, overdueAdapter,
             activeHeader, activeAdapter,
             completedHeader, completedAdapter
         )
+        recyclerView.adapter = concatAdapter
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
+
+        // Single unified swipe helper — resolves sub-adapter at runtime via ViewHolder type
+        val swipeCallback = object : ItemTouchHelper.SimpleCallback(
+            0, ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT
+        ) {
+            override fun onMove(rv: RecyclerView, vh: RecyclerView.ViewHolder, t: RecyclerView.ViewHolder) = false
+
+            // Block swipes on section header rows using ViewHolder type
+            override fun getSwipeDirs(rv: RecyclerView, vh: RecyclerView.ViewHolder): Int {
+                if (vh !is TaskAdapter.TaskViewHolder) return 0
+                return super.getSwipeDirs(rv, vh)
+            }
+
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                // absoluteAdapterPosition gives the GLOBAL position across the entire ConcatAdapter
+                val globalPos = viewHolder.absoluteAdapterPosition
+                if (globalPos == RecyclerView.NO_POSITION) return
+
+                val pair = concatAdapter.getWrappedAdapterAndPosition(globalPos)
+                val wrappedAdapter = pair.first as? TaskAdapter ?: return
+                val localPos = pair.second
+                if (localPos < 0 || localPos >= wrappedAdapter.currentList.size) return
+
+                val task = wrappedAdapter.currentList[localPos]
+
+                // Reset the item's swiped state visually IMMEDIATELY so the red/green bar disappears.
+                // The underlying LiveData/DiffUtil will animate the real add/remove shortly after.
+                wrappedAdapter.notifyItemChanged(localPos)
+
+                // Fire the action
+                if (direction == ItemTouchHelper.LEFT) {
+                    onTaskDelete(task)
+                } else {
+                    if (wrappedAdapter === inboxAdapter) {
+                        onInboxAccept(task)
+                    } else {
+                        onTaskToggle(task)
+                    }
+                }
+            }
+
+            override fun onChildDraw(
+                c: android.graphics.Canvas, rv: RecyclerView, vh: RecyclerView.ViewHolder,
+                dX: Float, dY: Float, actionState: Int, active: Boolean
+            ) {
+                it.xabaras.android.recyclerview.swipedecorator.RecyclerViewSwipeDecorator.Builder(
+                    c, rv, vh, dX, dY, actionState, active
+                )
+                    .addSwipeLeftBackgroundColor(android.graphics.Color.parseColor("#EF4444"))
+                    .addSwipeLeftActionIcon(R.drawable.delete)
+                    .setSwipeLeftActionIconTint(android.graphics.Color.WHITE)
+                    .addSwipeLeftCornerRadius(1, 12f)
+                    .addSwipeRightBackgroundColor(android.graphics.Color.parseColor("#22C55E"))
+                    .addSwipeRightActionIcon(R.drawable.ic_check)
+                    .setSwipeRightActionIconTint(android.graphics.Color.WHITE)
+                    .addSwipeRightCornerRadius(1, 12f)
+                    .create()
+                    .decorate()
+                super.onChildDraw(c, rv, vh, dX, dY, actionState, active)
+            }
+        }
+        ItemTouchHelper(swipeCallback).attachToRecyclerView(recyclerView)
     }
 }

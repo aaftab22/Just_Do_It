@@ -11,8 +11,8 @@ import androidx.lifecycle.viewModelScope
 import com.darksunTechnologies.justdoit.database.AppDatabase
 import com.darksunTechnologies.justdoit.database.TaskRepository
 import com.darksunTechnologies.justdoit.models.Task
-import com.darksunTechnologies.justdoit.notifications.AlarmHelper
-import com.darksunTechnologies.justdoit.notifications.GeofenceManager
+import com.darksunTechnologies.justdoit.alarms.AlarmHelper
+import com.darksunTechnologies.justdoit.alarms.GeofenceManager
 import com.google.gson.Gson
 import kotlinx.coroutines.launch
 import androidx.core.content.edit
@@ -99,6 +99,18 @@ class TaskViewModel(application: Application): AndroidViewModel(application) {
         repository.updateTask(task)
     }
 
+    fun acceptSuggestedTask(task: Task) = viewModelScope.launch {
+        val acceptedTask = task.copy(needsReview = false)
+        repository.updateTask(acceptedTask)
+        
+        if (acceptedTask.hasReminder) {
+            AlarmHelper.scheduleReminder(getApplication(), acceptedTask)
+        }
+        if (acceptedTask.hasLocationReminder) {
+            GeofenceManager.addGeofence(getApplication(), acceptedTask)
+        }
+    }
+
     fun deleteTask(task: Task) = viewModelScope.launch {
         repository.deleteTask(task)
         AlarmHelper.cancelReminder(getApplication(), task.id)
@@ -108,22 +120,41 @@ class TaskViewModel(application: Application): AndroidViewModel(application) {
     }
 
     fun undoDelete() {
-        recentlyDeletedTask?.let {
+        recentlyDeletedTask?.let { task ->
             viewModelScope.launch {
-                repository.insertTask(it)
+                repository.insertTask(task)
+                if (task.hasReminder) {
+                    AlarmHelper.scheduleReminder(getApplication(), task)
+                }
+                if (task.hasLocationReminder) {
+                    GeofenceManager.addGeofence(getApplication(), task)
+                }
             }
         }
     }
 
     fun clearAll() = viewModelScope.launch {
-        recentlyDeletedTasks = tasks.value.orEmpty()
+        val listToClear = tasks.value.orEmpty()
+        recentlyDeletedTasks = listToClear
+        listToClear.forEach { task ->
+            AlarmHelper.cancelReminder(getApplication(), task.id)
+            GeofenceManager.removeGeofence(getApplication(), task.id)
+        }
         repository.deleteAll()
     }
 
     fun undoDeleteAll() {
         recentlyDeletedTasks?.let { list ->
             viewModelScope.launch {
-                list.forEach { repository.insertTask(it) }
+                list.forEach { task -> 
+                    repository.insertTask(task)
+                    if (task.hasReminder) {
+                        AlarmHelper.scheduleReminder(getApplication(), task)
+                    }
+                    if (task.hasLocationReminder) {
+                        GeofenceManager.addGeofence(getApplication(), task)
+                    }
+                }
             }
         }
     }
@@ -200,5 +231,80 @@ class TaskViewModel(application: Application): AndroidViewModel(application) {
 
     fun searchTasks(query: String) {
         _searchQuery.value = query
+    }
+
+    // ─── HYBRID BATCH ENGINE: Foreground Burst Processing ────────
+    private val _isProcessingQueue = MutableLiveData<Boolean>(false)
+    val isProcessingQueue: LiveData<Boolean> = _isProcessingQueue
+
+    private val _processingProgress = MutableLiveData<Pair<Int, Int>>()
+    val processingProgress: LiveData<Pair<Int, Int>> = _processingProgress
+
+    fun processPendingQueue() = viewModelScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+        val db = AppDatabase.getInstance(getApplication())
+        val queueDao = db.queuedMessageDao()
+        val pending = queueDao.getPendingMessages()
+        
+        if (pending.isEmpty()) return@launch
+        
+        _isProcessingQueue.postValue(true)
+        val total = pending.size
+        _processingProgress.postValue(Pair(0, total))
+        android.util.Log.d("TaskViewModel", "Foreground burst: Processing $total queued messages")
+        
+        for ((index, msg) in pending.withIndex()) {
+            _processingProgress.postValue(Pair(index + 1, total))
+            try {
+                val parsedTasks = com.darksunTechnologies.justdoit.notifications.AiTaskExtractor.extract(msg.rawText)
+                if (parsedTasks.isNotEmpty()) {
+                    for (parsed in parsedTasks) {
+                        // Deduplication
+                        val existing = dao.getTaskByName(parsed.title)
+                        if (existing != null) continue
+
+                        val appName = when (msg.sourcePackage) {
+                            "com.whatsapp", "com.whatsapp.w4b" -> "WhatsApp"
+                            "org.telegram.messenger" -> "Telegram"
+                            "com.google.android.apps.messaging" -> "Messages"
+                            "com.google.android.gm" -> "Gmail"
+                            "com.microsoft.office.outlook" -> "Outlook"
+                            else -> "Notifications"
+                        }
+                        val desc = "Added from $appName" +
+                            (if (msg.senderTitle.isNotBlank()) " (${msg.senderTitle})" else "") +
+                            "\n[Parsed by: Offline AI 🤖]\n\n" +
+                            "Original Message:\n\"${msg.rawText}\""
+
+                        val task = com.darksunTechnologies.justdoit.models.Task(
+                            name = parsed.title,
+                            description = desc,
+                            dueDate = parsed.dueDateMillis,
+                            isHighPriority = parsed.isHighPriority,
+                            source = parsed.parserSource,
+                            needsReview = true,
+                            hasReminder = parsed.dueDateMillis != null
+                        )
+                        repository.insertTask(task)
+                    }
+                }
+                queueDao.updateStatus(msg.id, "PROCESSED")
+                queueDao.deleteById(msg.id)
+            } catch (e: Exception) {
+                android.util.Log.e("TaskViewModel", "Error processing queued msg ${msg.id}", e)
+                queueDao.updateStatus(msg.id, "FAILED")
+            }
+        }
+        
+        // Dismiss the batch summary notification
+        val manager = (getApplication() as android.app.Application)
+            .getSystemService(android.content.Context.NOTIFICATION_SERVICE) as android.app.NotificationManager
+        manager.cancel(999_999)
+        
+        _isProcessingQueue.postValue(false)
+    }
+
+    fun discardAllSuggestions() = viewModelScope.launch {
+        val suggestions = tasks.value?.filter { it.needsReview } ?: return@launch
+        suggestions.forEach { repository.deleteTask(it) }
     }
 }

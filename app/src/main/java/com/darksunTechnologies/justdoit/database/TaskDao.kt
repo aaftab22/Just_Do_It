@@ -56,4 +56,7 @@ interface TaskDao {
 
     @Query("UPDATE tasks SET dueDate = :newTime WHERE id = :taskId")
     fun updateTaskDueDate(taskId: Int, newTime: Long)
+
+    @Query("SELECT * FROM tasks WHERE name = :name LIMIT 1")
+    fun getTaskByName(name: String): Task?
 }

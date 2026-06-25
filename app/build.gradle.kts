@@ -77,6 +77,7 @@ dependencies {
     implementation(libs.recyclerview.swipedecorator)
 
     implementation(libs.androidx.lifecycle.livedata.ktx)
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.4")
 
     //ViewPager2 + Fragment for tabs
     implementation(libs.androidx.viewpager2)
@@ -84,4 +85,10 @@ dependencies {
 
     // Location & Geofencing
     implementation("com.google.android.gms:play-services-location:21.2.0")
+
+    // Gemini Nano (On-Device AI via AICore)
+    implementation(libs.mlkit.genai.prompt)
+
+    // WorkManager
+    implementation("androidx.work:work-runtime-ktx:2.9.0")
 }

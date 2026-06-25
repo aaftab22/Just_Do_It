@@ -11,11 +11,6 @@ import com.darksunTechnologies.justdoit.TaskDetailActivity
 
 class ReminderReceiver: BroadcastReceiver() {
 
-    companion object {
-        const val ACTION_MARK_DONE = "ACTION_MARK_DONE"
-        const val ACTION_SNOOZE = "ACTION_SNOOZE"
-    }
-
     override fun onReceive(context: Context, intent: Intent?) {
         val taskId = intent?.getIntExtra("task_id", -1) ?: -1
         val taskName = intent?.getStringExtra("task_name") ?: "Task Reminder"
@@ -26,6 +21,14 @@ class ReminderReceiver: BroadcastReceiver() {
         val tapIntent = Intent(context, TaskDetailActivity::class.java).apply {
             putExtra("task_id", taskId)
             putExtra("task_name", taskName)
+            putExtra("task_description", intent?.getStringExtra("task_description"))
+            putExtra("task_priority", intent?.getBooleanExtra("task_priority", false) ?: false)
+            putExtra("task_completed", intent?.getBooleanExtra("task_completed", false) ?: false)
+            putExtra("task_due_date", intent?.getLongExtra("task_due_date", -1L) ?: -1L)
+            putExtra("task_has_reminder", intent?.getBooleanExtra("task_has_reminder", false) ?: false)
+            putExtra("task_created_at", intent?.getLongExtra("task_created_at", System.currentTimeMillis()) ?: System.currentTimeMillis())
+            putExtra("task_source", intent?.getStringExtra("task_source"))
+            putExtra("task_repeat_type", intent?.getStringExtra("task_repeat_type"))
             putExtra("start_in_edit_mode", false)
         }
 
@@ -34,9 +37,9 @@ class ReminderReceiver: BroadcastReceiver() {
             getPendingIntent(taskId, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
         }
 
-        // --- Mark Done action button ---
-        val doneIntent = Intent(context, NotificationActionReceiver::class.java).apply {
-            action = ACTION_MARK_DONE
+        // --- Mark Done action button → unified TaskActionReceiver ---
+        val doneIntent = Intent(context, TaskActionReceiver::class.java).apply {
+            action = TaskActionReceiver.ACTION_MARK_DONE
             putExtra("task_id", taskId)
         }
         val pendingDoneIntent = PendingIntent.getBroadcast(
@@ -46,9 +49,9 @@ class ReminderReceiver: BroadcastReceiver() {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        // --- Snooze action button ---
-        val snoozeIntent = Intent(context, NotificationActionReceiver::class.java).apply {
-            action = ACTION_SNOOZE
+        // --- Snooze action button → unified TaskActionReceiver ---
+        val snoozeIntent = Intent(context, TaskActionReceiver::class.java).apply {
+            action = TaskActionReceiver.ACTION_SNOOZE_TASK
             putExtra("task_id", taskId)
         }
         val pendingSnoozeIntent = PendingIntent.getBroadcast(

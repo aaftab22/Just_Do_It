@@ -60,7 +60,7 @@ class TaskAdapter(
             dueDateTV.text = "Due $formatted"
             llDueDate.visibility = View.VISIBLE
 
-            val isOverdue = currTask.dueDate < System.currentTimeMillis() && !currTask.isCompleted
+            val isOverdue = currTask.dueDate < System.currentTimeMillis() && !currTask.isCompleted && !currTask.needsReview
             val context = holder.itemView.context
             if (isOverdue) {
                 dueDateTV.setTextColor(context.getColor(R.color.overdue_red))
@@ -79,6 +79,10 @@ class TaskAdapter(
         holder.itemView.setOnClickListener {
             onTaskClick(currTask)
         }
+
+        // AI Suggestion badge for inbox items
+        val aiBadge = holder.itemView.findViewById<TextView>(R.id.tvAiSuggestionBadge)
+        aiBadge.visibility = if (currTask.needsReview) View.VISIBLE else View.GONE
     }
 
     fun getSwipeCallback(): androidx.recyclerview.widget.ItemTouchHelper.SimpleCallback {

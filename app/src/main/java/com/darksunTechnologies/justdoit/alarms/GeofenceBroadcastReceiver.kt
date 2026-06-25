@@ -1,5 +1,6 @@
-package com.darksunTechnologies.justdoit.notifications
+package com.darksunTechnologies.justdoit.alarms
 
+import com.darksunTechnologies.justdoit.notifications.ReminderReceiver
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent

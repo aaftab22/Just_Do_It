@@ -1,5 +1,6 @@
-package com.darksunTechnologies.justdoit.notifications
+package com.darksunTechnologies.justdoit.alarms
 
+import com.darksunTechnologies.justdoit.notifications.ReminderReceiver
 import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
@@ -34,6 +35,14 @@ object AlarmHelper {
         val intent = Intent(context, ReminderReceiver::class.java).apply {
             putExtra("task_id", task.id)
             putExtra("task_name", task.name)
+            putExtra("task_description", task.description)
+            putExtra("task_priority", task.isHighPriority)
+            putExtra("task_completed", task.isCompleted)
+            putExtra("task_due_date", task.dueDate ?: -1L)
+            putExtra("task_has_reminder", task.hasReminder)
+            putExtra("task_created_at", task.createdAt)
+            putExtra("task_source", task.source)
+            putExtra("task_repeat_type", task.repeatType.name)
         }
 
         val pendingIntent = PendingIntent.getBroadcast(

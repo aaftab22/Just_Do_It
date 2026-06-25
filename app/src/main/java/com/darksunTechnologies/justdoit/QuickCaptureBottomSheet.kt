@@ -1,20 +1,24 @@
 package com.darksunTechnologies.justdoit
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.activityViewModels
-import androidx.activity.result.contract.ActivityResultContracts
-import android.Manifest
-import android.content.pm.PackageManager
-import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
 import com.darksunTechnologies.justdoit.databinding.BottomSheetQuickCaptureBinding
 import com.darksunTechnologies.justdoit.models.Task
+import com.darksunTechnologies.justdoit.parsers.AiQuickCaptureParser
+import com.darksunTechnologies.justdoit.alarms.AlarmHelper
 import com.darksunTechnologies.justdoit.viewmodel.TaskViewModel
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import kotlinx.coroutines.launch
 
 /**
  * Quick Capture bottom sheet specialized for Tasks.
@@ -137,17 +141,34 @@ class QuickCaptureBottomSheet : BottomSheetDialogFragment() {
         if (input.isEmpty()) return
 
         val description = binding.captureDescription.text?.toString()?.trim()
-        val isHighPriority = binding.capturePrioritySwitch.isChecked
-        val task = Task(
-            name = input,
-            description = if (description.isNullOrBlank()) null else description,
-            isHighPriority = isHighPriority,
-            source = "manual",
-            createdAt = System.currentTimeMillis()
-        )
-        taskViewModel.addTask(task)
+        val isHighPriorityManual = binding.capturePrioritySwitch.isChecked
 
-        dismiss()
+        // Use AI to parse messy input into structured task fields (date, time, priority)
+        // Falls back to raw text on devices without Gemini Nano
+        lifecycleScope.launch {
+            val parsedTasks = AiQuickCaptureParser.parseUserInput(input)
+
+            for (parsed in parsedTasks) {
+                val descString = if (description.isNullOrBlank()) "" else "$description\n\n"
+                val task = Task(
+                    name = parsed.title,
+                    description = descString + "[Parsed by: ${if (parsed.parserSource == "offline_ai") "Offline AI 🤖" else "Regex ⚡"}]",
+                    isHighPriority = isHighPriorityManual || parsed.isHighPriority,
+                    dueDate = parsed.dueDateMillis,
+                    hasReminder = parsed.dueDateMillis != null,
+                    source = "quick_capture",
+                    createdAt = System.currentTimeMillis()
+                )
+                taskViewModel.addTask(task)
+
+                // Schedule reminder if AI extracted a date/time
+                if (parsed.dueDateMillis != null) {
+                    AlarmHelper.scheduleReminder(requireContext(), task)
+                }
+            }
+
+            dismiss()
+        }
     }
 
     override fun onDestroyView() {
