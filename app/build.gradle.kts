@@ -5,7 +5,7 @@ plugins {
 }
 android {
     namespace = "com.darksunTechnologies.justdoit"
-    compileSdk = 35
+    compileSdk = 36
 
     signingConfigs {
         create("release") {
@@ -20,9 +20,9 @@ android {
         applicationId = "com.darksunTechnologies.justdoit"
         minSdk = 26
         //noinspection OldTargetApi
-        targetSdk = 35
-        versionCode = 18
-        versionName = "2.1.0"
+        targetSdk = 36
+        versionCode = 19
+        versionName = "2.1.1"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
